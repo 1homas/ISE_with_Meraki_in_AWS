@@ -7,7 +7,10 @@ This `ise_in_aws.yaml` playbook will create :
 - ISE 3.1
 - Meraki vMX
 - Linux VM to ping while ISE boots so you will feel confident that it's going to work!
-You will need an additional Meraki MX to act as a hub for the VPN connection.
+You will need at least one additional Meraki MX or Z to act as a hub and terminate the other side of the VPN connection.
+
+
+![ISE with Meraki in AWS](images/ISE_with_Meraki_in_AWS.png)
 
 
 
@@ -54,15 +57,17 @@ You will need an additional Meraki MX to act as a hub for the VPN connection.
     ansible-playbook ise_in_aws.yaml
     ```
 
+1. When ISE is up, you may configure it using the additional playbook :
+
+    ```bash
+    ansible-playbook ise.configuration.yaml
+    ```
+
 2. When you are finished playing, you may terminate the instances:
 
     ```bash
     ansible-playbook ise_in_aws.terminate.yaml
     ```
-
-
-
-
 
 ## Manual Configuration in AWS Console and Meraki Dashboard
 
