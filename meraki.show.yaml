@@ -1,0 +1,145 @@
+---
+#------------------------------------------------------------------------------
+# Ansible_Meraki_Show
+# 
+# Shows basic Cisco Meraki information
+#  * organization(s)
+#  * admin(s)
+#  * network(s)
+#  * device(s)
+# 
+# Assumes AWS_* environment variables for task authentication:
+#    export MERAKI_KEY='EXAMPLE+KEYc320e12ee407159487a4cabc41abb'
+# 
+# Run with `ansible-playbook show.yaml`
+#
+#------------------------------------------------------------------------------
+
+
+- name: Show Meraki Admins, Organizations, Networks, and Devices
+  hosts: localhost
+  vars:
+    meraki_org_name: thomas
+  gather_facts: no
+  tasks:
+
+
+  - name: Get administrators associated to the organization
+    cisco.meraki.meraki_admin:
+      org_name: "{{ meraki_org_name }}"
+      state: query
+    delegate_to: localhost
+    register: admins
+
+  - name: Set admin emails
+    vars:
+      query: "[*].email"
+    ansible.builtin.set_fact: 
+      admin_emails: "{{ admins.data | community.general.json_query(query) }}"
+
+  - name: Show administrators' email addresses
+    ansible.builtin.debug: var=admin_emails
+
+
+
+
+  - name: Get all organizations associated to user's authentication key
+    delegate_to: localhost
+    cisco.meraki.meraki_organization:
+      state: query
+    register: orgs
+
+  - name: Set org_names
+    vars:
+      query: "[*].name"
+    ansible.builtin.set_fact: 
+      org_names: "{{ orgs.data | community.general.json_query(query) }}"
+
+  - name: Show Org Names
+    ansible.builtin.debug: var=org_names
+
+
+
+
+  - name: Get all networks associated with the organization
+    delegate_to: localhost
+    meraki_network:
+      org_name: "{{ meraki_org_name }}"
+      state: query
+    register: networks
+
+  - name: Set network_names
+    vars:
+      query: "[*].name"
+    ansible.builtin.set_fact: 
+      network_names: "{{ networks.data | community.general.json_query(query) }}"
+
+  - name: Show network_names
+    ansible.builtin.debug: var=network_names
+
+
+
+
+  - name: Get All Devices in the Organization
+    delegate_to: localhost
+    cisco.meraki.meraki_device:
+      state: query
+      # query parameters:
+      org_name: "{{ meraki_org_name }}"
+      # net_name: "{{ meraki_net_name }}"
+      # hostname: main-switch
+      # model: main-switch
+      # serial: abc123
+    register: devices
+
+  - name: Show devices
+    ansible.builtin.debug: var=devices
+
+  - name: Set device_names
+    vars:
+      query: "[*].serial"
+    ansible.builtin.set_fact: 
+      serials: "{{ devices.data | community.general.json_query(query) }}"
+
+  - name: Show device serial numbers
+    ansible.builtin.debug: var=serials
+
+
+
+
+  - name: Set device_ips
+    vars:
+      query: "[*].lan_ip"
+    ansible.builtin.set_fact: 
+      device_ips: "{{ devices.data | community.general.json_query(query) }}"
+
+  - name: Show device_ips
+    ansible.builtin.debug: var=device_ips
+
+
+  - name: Set device_models
+    vars:
+      query: "[*].model"
+    ansible.builtin.set_fact: 
+      device_models: "{{ devices.data | community.general.json_query(query) }}"
+
+  - name: Show device_models
+    ansible.builtin.debug: var=device_models
+
+
+
+
+  # - name: Query for Site-to-Site VPN hubs
+  #   cisco.meraki.meraki_site_to_site_vpn:
+  #     org_name: "{{ meraki_org_name }}"
+  #     net_name: "{{ meraki_net_name }}"
+  #     state: query
+  #     mode: hub
+  #   register: hubs
+
+
+  # - name: hubs
+  #   ansible.builtin.debug: var=hubs
+
+
+...

@@ -1,0 +1,218 @@
+---
+
+
+  #
+  # The default LAN Setting for a new network will be :
+  # 
+  # | Name                | Subnet            | MX IP
+  # |---------------------|-------------------|--------------
+  # | Single LAN Settings | 192.168.128.0/24  | 192.168.128.1
+  #
+  # Timezones: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  #
+  - name: "Create a v/MX Network '{{ meraki_org_name }}:{{ meraki_net_name }}'"
+    cisco.meraki.meraki_network:
+      org_name: "{{ meraki_org_name }}"
+      net_name: "{{ meraki_net_name }}"
+      state: present
+      type: appliance
+      timezone: America/Los_Angeles
+      tags: ise, demo, lab, hub, mx
+    register: new_network
+
+  # - name: new_network
+  #   ansible.builtin.debug: var=new_network
+
+  # ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠
+  # Do not use cisco.meraki.meraki_device to claim any vMX devices into
+  # this network - the VMX authentication token will do this automatically!
+  # ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠
+
+
+
+
+  - name: Generate vMX Token in Meraki Dashboard
+    ansible.builtin.pause:
+      prompt: |
+        Generate the vMX Authentication Token :
+        - In the Meraki Dashboard, select the network '{{ meraki_org_name }}:{{ meraki_net_name }}'
+        - Add a vMX device if needed
+        - Navigate to Security & SDWAN > Monitor > Appliance Status 
+        - Scroll down and select Generate authentication token...
+        - Paste the token here and press <Enter>
+    register: token
+
+  - name: Set meraki_vmx_authentication_token
+    ansible.builtin.set_fact:
+      meraki_vmx_authentication_token: "{{ token.user_input | trim }}"
+
+  # - name: meraki_vmx_authentication_token
+  #   ansible.builtin.debug: var=meraki_vmx_authentication_token
+
+
+
+
+  - name: Create SG-AllowAll Security Group
+    amazon.aws.ec2_group:
+      name: SG-AllowAll
+      description: Allow all traffic
+      vpc_id: "{{ vpc.vpc.id }}"
+      region: "{{ aws_region }}"
+      rules:
+        - proto: all
+          cidr_ip: 0.0.0.0/0    # any
+          rule_desc: Allow All
+      rules_egress:
+        - proto: all
+          cidr_ip: 0.0.0.0/0    # any
+          rule_desc: Allow All
+      tags:
+        Name: SG-AllowAll
+        project: "{{ project_name }}"
+        start_date: "{{ ansible_date_time.date }}"
+    register: sg_allowall
+
+  # - name: Show sg_allowall
+  #   ansible.builtin.debug: var=sg_allowall
+
+
+
+
+  #
+  # 💡 Uses the community.aws.ec2_instance module which supports `user_data` 
+  # field for inclusion of the Meraki vMX Authentication Token!
+  #
+  - name: Create VMX Instance
+    community.aws.ec2_instance:
+      state: present
+      vpc_subnet_id: "{{ subnet_public.subnet.id }}"
+      region: "{{ aws_region }}"
+      image_id: "{{ aws_vmx_ami }}"
+      instance_type: "{{ aws_vmx_instance_type }}"
+      key_name: "{{ aws_keypair_name }}"   # SSH Keypair Name
+      security_group: "{{ sg_allowall.group_name }}"
+      network:
+        assign_public_ip: yes
+      user_data: "{{ meraki_vmx_authentication_token | trim }}"
+      wait: yes    # must wait for next tasks
+      tags:
+        Name: "{{ meraki_vmx_name }}"
+        project: "{{ project_name }}"
+        start_date: "{{ ansible_date_time.date }}"
+    register: vmx
+
+  # - name: Show vmx
+  #   ansible.builtin.debug: var=vmx
+
+
+
+  #
+  # Requires the vMX to be initialized; use `wait: yes` above
+  # ⚠ Works with eni_id but not subnet_id
+  #
+  - name: Disable Source/Destination Check for vMX as NAT device!
+    when: vmx.instances[0].subnet_id is defined
+    amazon.aws.ec2_eni:
+      instance_id: "{{ vmx.instances[0].instance_id }}"
+      eni_id: "{{ vmx.instances[0].network_interfaces[0].network_interface_id }}"
+      source_dest_check: false
+    register: vmx_eni
+
+  # - name: Show vmx_eni
+  #   ansible.builtin.debug: var=vmx_eni
+
+
+
+
+  #
+  # Update the Private Route Table
+  #
+  # | Destination     | Target |
+  # |-----------------|--------|
+  # | 172.31.0.0/16   | local
+  # | 192.168.0.0/16  | eni-*  <=== add this
+  # | 0.0.0.0/0       | igw-*
+  #
+  - name: 💡 Update the Private Route Table with vMX Network
+    community.aws.ec2_vpc_route_table:
+      vpc_id: "{{ vpc.vpc.id }}"
+      subnets:
+        - "{{ subnet_private.subnet.id }}"
+      routes:
+        - dest: 0.0.0.0/0
+          gateway_id: "{{ igw.gateway_id }}"
+        - dest: 192.168.0.0/16
+          instance_id: "{{ vmx.instance_ids[0] }}"
+      tags:
+        Name: RT_Private
+        project: "{{ project_name }}"
+        start_date: "{{ ansible_date_time.date }}"
+    register: rt_private
+
+
+
+
+  - name: Query Network Hubs
+    cisco.meraki.meraki_site_to_site_vpn:
+      org_name: "{{ meraki_org_name }}"
+      net_name: "{{ meraki_vpn_hub.net_name }}"
+      state: query
+      mode: hub
+    register: lab_hub
+
+  - name: Show lab_hub
+    ansible.builtin.debug: var=lab_hub
+
+
+
+
+  - name: Query Lab Hub Network
+    meraki_network:
+      org_name: "{{ meraki_org_name }}"
+      net_name: "{{ meraki_vpn_hub.net_name }}"
+      state: query
+    register: lab_network
+
+  - name: Show lab_network
+    ansible.builtin.debug: var=lab_network
+
+
+
+
+  # - name: Set vMX in Hub mode
+  #   cisco.meraki.meraki_site_to_site_vpn:
+  #     org_name: "{{ meraki_org_name }}"
+  #     net_name: "{{ meraki_net_name }}"
+  #     state: present
+  #     mode: hub
+  #     # subnets:
+  #     # - local_subnet: 172.31.0.0/16
+  #     #   use_vpn: yes
+  #   register: set_spoke
+
+
+
+
+  - name: Set vMX in Spoke mode to Lab Hub
+    cisco.meraki.meraki_site_to_site_vpn:
+      org_name: "{{ meraki_org_name }}"
+      net_name: "{{ meraki_net_name }}"
+      state: present
+      mode: spoke
+      hubs:
+      - hub_id: "{{ lab_network.data.id }}"
+        use_default_route: false
+      #
+      # 💡 Add Local Network
+      #
+      # subnets:
+      # - local_subnet: 172.31.0.0/16
+      #   use_vpn: yes
+    register: spoke_mode
+
+  - name: spoke_mode
+    ansible.builtin.debug: var=spoke_mode
+
+
+
+...

@@ -1,0 +1,90 @@
+---
+#
+# Tasks to enable and confirm ISE APIs
+#
+
+  - name: Enable ISE OpenAPIs (ISE 3.1+)
+    delegate_to: localhost
+    ansible.builtin.uri:
+      url: "https://{{ inventory_hostname }}/admin/API/apiService/update"
+      method: POST
+      url_username: "{{ ise_username }}"
+      url_password: "{{ ise_password }}"
+      force_basic_auth: yes
+      body: '{ "papIsEnabled":true, "psnsIsEnabled":true }'
+      status_code: 200,500
+      body_format: json
+      validate_certs: "{{ ise_verify }}"
+      return_content: true
+    register: response
+
+  # - name: response
+  #   ansible.builtin.debug: var=response
+
+
+  - name: Show ISE OpenAPIs Enabled Status
+    when: (response.status == 200) or (response.status == 500 and response.content.find('already enabled') != -1)
+    ansible.builtin.debug: 
+      msg : "✅ ISE OpenAPIs Enabled"
+
+
+  - name: Show ISE OpenAPIs Disabled Status
+    when: (response.status != 200) and (response.status != 500)
+    ansible.builtin.debug: 
+      msg : "❌ ISE OpenAPIs Disabled"
+  
+
+  - name: Get ISE ERS APIs Status
+    delegate_to: localhost
+    ansible.builtin.uri:
+      url: "https://{{ inventory_hostname }}/admin/API/NetworkAccessConfig/ERS"
+      method: GET
+      url_username: "{{ ise_username }}"
+      url_password: "{{ ise_password }}"
+      force_basic_auth: yes
+      headers:
+        Accept: application/xml
+        Content-Type: application/xml
+      status_code: 200
+      validate_certs: "{{ ise_verify }}"
+      return_content: true
+    register: response
+
+  - name: ISE ERS APIs Status
+    when: response.status == 200
+    ansible.builtin.debug: 
+      msg : "✅ ISE OpenAPIs Enabled"
+
+
+  - name: Enable ISE ERS APIs
+    delegate_to: localhost
+    ansible.builtin.uri:
+      url: "https://{{ inventory_hostname }}/admin/API/NetworkAccessConfig/ERS"
+      method: PUT
+      url_username: "{{ ise_username }}"
+      url_password: "{{ ise_password }}"
+      force_basic_auth: yes
+      headers:
+        Accept: application/xml
+        Content-Type: application/xml
+      body: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><ersConfig>
+    <id>1</id><isCSRFCheck>false</isCSRFCheck><isPapEnabled>true</isPapEnabled><isPsnsEnabled>true</isPsnsEnabled></ersConfig>'
+      status_code: 200
+      validate_certs: "{{ ise_verify }}"
+      return_content: true
+    register: response
+
+
+  - name: Show ISE ERS Enabled Status
+    when: response.status == 200
+    ansible.builtin.debug: 
+      msg : "✅ ISE ERS APIs Enabled"
+
+
+  - name: Show ISE ERS Disabled Status
+    when: response.status != 200
+    ansible.builtin.debug: 
+      msg : "❌ ISE ERS APIs Disabled"
+
+
+...

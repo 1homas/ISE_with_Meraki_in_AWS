@@ -1,0 +1,46 @@
+---
+#
+# Sets facts for ISE in an ise_facts variable
+#
+
+  - name: Create ise_facts
+    ansible.builtin.set_fact: 
+      ise_facts: 
+        ise_hostname: "{{ inventory_hostname }}"
+
+  # - name: Verify ise_facts
+  #   ansible.builtin.debug: var=ise_facts
+
+
+
+
+  - name: Get ISE Version
+    delegate_to: localhost
+    ansible.builtin.uri:
+      url: "https://{{ inventory_hostname }}/ers/config/op/systemconfig/iseversion"
+      url_username: "{{ ise_username }}"
+      url_password: "{{ ise_password }}"
+      headers:
+        Accept: application/json
+      validate_certs: "{{ ise_verify }}"
+    register: result
+    until: result.status == 200
+    retries: 10
+    delay: 10
+
+  # - name: Show Full Version result
+  #   ansible.builtin.debug: var=result
+
+
+
+
+  - name: Set Facts for ISE Version & Patch
+    loop: "{{ result.json.OperationResult.resultValue }}"
+    ansible.builtin.set_fact: 
+      ise_facts: "{{ ise_facts | default({}) | combine( { item.name : item.value } ) }}"
+
+  # - name: Verify ise_facts
+  #   ansible.builtin.debug: var=ise_facts
+
+
+...

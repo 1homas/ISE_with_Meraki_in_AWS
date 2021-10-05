@@ -1,0 +1,103 @@
+---
+#
+# Network Devices
+#
+
+network_devices:
+
+#------------------------------------------------------------------------------
+# Meraki MX
+#------------------------------------------------------------------------------
+
+- device_name: lab-mx68-1
+  description: MX68
+  state: present
+  ipv4: 192.168.101.1
+  network_device_groups:
+  - Device Type#All Device Types#SDWAN#MX#MX68
+  - Location#All Locations#AMER#HBC
+  - PIN#PIN#Branch
+
+
+#------------------------------------------------------------------------------
+# Meraki MR APs
+#------------------------------------------------------------------------------
+
+- device_name: lab-mr46-1
+  description: Cisco Meraki MR46
+  state: present
+  ipv4: 192.168.101.4
+  network_device_groups:
+  - Device Type#All Device Types#Wireless#MR#MR46
+  - Enforcement#Enforcement#Closed
+  - Location#All Locations#AMER#HBC
+  - PIN#PIN#Branch
+  # radius_secret: C1sco12345
+  # tacacs_secret: C1sco12345
+
+
+#------------------------------------------------------------------------------
+# Meraki Z
+#------------------------------------------------------------------------------
+
+- device_name: teleworker-thomas
+  description: Cisco Meraki Z3
+  state: present
+  ipv4: 192.168.111.1
+  profile_name: Cisco
+  network_device_groups:
+  - Device Type#All Device Types#SDWAN#Z#Z3
+  - Location#All Locations#AMER#HBC
+  - PIN#PIN#Branch
+
+
+- device_name: teleworker-employee
+  description: Cisco Meraki Z3
+  state: present
+  ipv4: 192.168.112.1
+  profile_name: Cisco
+  network_device_groups:
+  - Device Type#All Device Types#SDWAN#Z#Z3
+  - Location#All Locations#AMER#HBC
+  - PIN#PIN#Branch
+
+
+#------------------------------------------------------------------------------
+# Meraki MS
+#------------------------------------------------------------------------------
+
+
+- device_name: lab-ms390-1
+  description: MS390
+  state: present
+  ipv4: 192.168.101.5
+  network_device_groups:
+  - Device Type#All Device Types#Switches#MS#MS390
+  - Enforcement#Enforcement#LowImpact
+  - Location#All Locations#AMER#HBC
+  - PIN#PIN#Branch
+
+# - device_name: lab-ms120-1
+#   description: MS390
+#   state: present
+#   ipv4: 192.168.101.4
+#   network_device_groups:
+#   - Device Type#All Device Types#Switches#MS#MS120
+#   - Location#All Locations#AMER#HBC
+#   - PIN#PIN#Branch
+
+
+# - device_name: lab-3560cx-1
+#   description: Cisco 3560CX
+#   state: present
+#   ipv4: 192.168.128.9
+#   profile_name: Cisco
+#   network_device_groups:
+#   - Device Type#All Device Types#Switches#Catalyst#3K
+#   - Location#All Locations#AMER#HBC
+#   - PIN#PIN#Branch
+
+
+
+
+...

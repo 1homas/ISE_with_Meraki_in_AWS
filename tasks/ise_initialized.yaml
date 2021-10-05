@@ -1,0 +1,25 @@
+---
+#
+# Test for ISE Application Server Initialization
+#
+
+  - name: Wait for ISE Application Server Initialization
+    delegate_to: localhost
+    ansible.builtin.uri:
+      url: https://{{ inventory_hostname }}/admin/login.jsp
+      method: GET
+      follow_redirects: safe
+      timeout: 10
+      validate_certs: no
+      # return_content: yes
+    register: result
+    until: result.status == 200
+    retries: 1000
+    delay: 10
+
+  - name: ISE Initialized
+    when: result.status == 200
+    ansible.builtin.debug: 
+      msg : "✅ ISE Application Server Initialized"
+
+...

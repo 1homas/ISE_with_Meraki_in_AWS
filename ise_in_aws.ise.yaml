@@ -1,0 +1,155 @@
+---
+
+
+  - name: Create SG-ISE-Allow-All Security Group
+    amazon.aws.ec2_group:
+      name: SG-ISE-Allow-All
+      description: SG-ISE-Allow-All
+      vpc_id: "{{ vpc.vpc.id }}"
+      region: "{{ aws_region }}"
+      rules:
+        - proto: tcp
+          from_port: 443
+          to_port: 443
+          cidr_ip: "{{ aws_public_access_cidr}}"    # any
+          rule_desc: Allow HTTPS access
+        - proto: tcp
+          from_port: 0
+          to_port: 65535
+          cidr_ip: "{{ aws_public_access_cidr}}"    # any
+          rule_desc: Allow everything TCP
+        - proto: udp
+          from_port: 0
+          to_port: 65535
+          cidr_ip: "{{ aws_public_access_cidr}}"    # any
+          rule_desc: Allow everything UDP
+        - proto: icmp
+          from_port: -1
+          to_port:  -1
+          cidr_ip: "{{ aws_public_access_cidr}}"    # any
+      tags:
+        Name: SG-ISE-Allow-All
+        project: "{{ project_name }}"
+        start_date: "{{ ansible_date_time.date }}"
+    register: sg_ise_all
+
+  # - name: Show sg_ise
+  #   ansible.builtin.debug: var=sg_ise
+
+
+  #
+  # ⚠ Limit CIDR IPs to the Lab Network to Prevent Public Internet Access!
+  #
+  - name: Create SG-ISE Security Group
+    amazon.aws.ec2_group:
+      name: SG-ISE-Test
+      description: SG-ISE
+      vpc_id: "{{ vpcs.vpcs[0].id }}"
+      region: "{{ aws_region }}"
+      rules:
+      - proto: udp
+        from_port: 49
+        to_port: 49
+        cidr_ip: 192.168.0.0/16
+        rule_desc: TACACS
+      - proto: udp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 192.168.0.0/16
+        rule_desc: HTTP
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 192.168.0.0/16
+        rule_desc: HTTPS
+      - proto: tcp
+        from_port: 8443
+        to_port: 8443
+        cidr_ip: 192.168.0.0/16
+        rule_desc: Portals
+      # - proto: tcp
+      #   from_port: 0
+      #   to_port: 65535
+      #   cidr_ip: 192.168.0.0/16
+      #   rule_desc: Allow everything TCP
+      # - proto: udp
+      #   from_port: 0
+      #   to_port: 65535
+      #   cidr_ip: 192.168.0.0/16
+      #   rule_desc: Allow everything UDP
+      - proto: udp
+        from_port: 1645
+        to_port: 1645
+        cidr_ip: 192.168.0.0/16
+        rule_desc: RADIUS Auth - old port
+      - proto: udp
+        from_port: 1646
+        to_port: 1646
+        cidr_ip: 192.168.0.0/16
+        rule_desc: RADIUS Acct - old port
+      - proto: udp
+        from_port: 1812
+        to_port: 1812
+        cidr_ip: 192.168.0.0/16
+        rule_desc: RADIUS Auth
+      - proto: udp
+        from_port: 1813
+        to_port: 1813
+        cidr_ip: 192.168.0.0/16
+        rule_desc: RADIUS Acct
+      - proto: tcp
+        from_port: 8910
+        to_port: 8910
+        cidr_ip: 192.168.0.0/16
+        rule_desc: pxGrid
+      # - proto: tcp
+      #   from_port: 9060
+      #   to_port: 9060
+      #   cidr_ip: 192.168.0.0/16
+      #   rule_desc: ISE ERS APIs
+      - proto: icmp
+        from_port: -1
+        to_port: -1
+        cidr_ip: 192.168.0.0/16
+        rule_desc: Ping
+      rules_egress:
+      - ip_protocol: '-1'
+        ip_ranges:
+        - cidr_ip: 0.0.0.0/0    # any
+        rule_desc: Allow All
+      tags:
+        Name: SG-ISE-Test
+        project: "{{ project_name }}"
+        # start_date: "{{ ansible_date_time.date }}"
+    register: sg_ise
+    tags:
+    - sg
+    - security_group
+
+  - name: Show sg_ise
+    ansible.builtin.debug: var=sg_ise
+    tags:
+    - sg
+    - security_group
+
+
+
+
+  - name: Create ISE 3.1 Instance in AWS
+    amazon.aws.ec2:
+      region: "{{ aws_region }}"
+      vpc_subnet_id: "{{ subnet_private.subnet.id }}"
+      instance_type: "{{ aws_ise_instance_type }}"
+      image: "{{ aws_ise_ami }}"
+      group: "{{ sg_ise.group_name }}"
+      key_name: "{{ aws_keypair_name }}"
+      wait: no
+      count: 1
+      assign_public_ip: yes
+      instance_tags:
+        Name: "ISE"
+        project: "{{ project_name }}"
+        start_date: "{{ ansible_date_time.date }}"
+      user_data: "hostname={{ ise_base_hostname | lower }}-server\nprimarynameserver={{ ise_dns_server }}\ndnsdomain={{ ise_domain }}\nntpserver={{ ise_ntp_server }}\ntimezone={{ ise_timezone }}\nusername={{ ise_username }}\npassword={{ ise_password }}"
+
+...

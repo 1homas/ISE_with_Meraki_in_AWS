@@ -1,0 +1,971 @@
+---
+#
+# Network Device Groups
+#
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# 🛑 Do not try to create or delete these default Network Device Groups!
+#   - Device Type#All Device Types
+#   - IPSEC#Is IPSEC Device
+#   - IPSEC#Is IPSEC Device#No
+#   - IPSEC#Is IPSEC Device#Yes
+#   - Location#All Locations
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+network_device_groups:
+
+#------------------------------------------------------------------------------
+# Network Device Groups by Enforcement
+#------------------------------------------------------------------------------
+
+- name: Enforcement#Enforcement
+  description: All Enforcement Options
+  othername: Enforcement
+
+- name: Enforcement#Enforcement#Monitor
+  description: Monitor
+  othername: Enforcement
+
+- name: Enforcement#Enforcement#LowImpact
+  description: LowImpact
+  othername: Enforcement
+
+- name: Enforcement#Enforcement#Closed
+  description: Closed
+  othername: Enforcement
+
+
+
+
+#------------------------------------------------------------------------------
+# Network Device Groups by Place In The Network (PIN)
+#------------------------------------------------------------------------------
+
+
+- name: PIN#PIN
+  description: Place in the Network (PIN)
+  othername: PIN
+
+- name: PIN#PIN#Branch
+  description: Branch
+  othername: PIN
+
+- name: PIN#PIN#Campus
+  description: Campus
+  othername: PIN
+
+- name: PIN#PIN#WAN
+  description: WAN
+  othername: PIN
+
+- name: PIN#PIN#InternetEdge
+  description: InternetEdge
+  othername: PIN
+
+- name: PIN#PIN#Cloud
+  description: Cloud
+  othername: PIN
+
+
+
+
+#------------------------------------------------------------------------------
+# Device Type#All Device Types#Wireless
+#------------------------------------------------------------------------------
+- name: Device Type#All Device Types#Wireless
+  description: Wireless
+  othername: Device Type
+
+- name: Device Type#All Device Types#Wireless#WLC
+  description: Cisco Catalyst WLC
+  othername: Device Type
+
+- name: Device Type#All Device Types#Wireless#9800
+  description: Cisco Catalyst Catalyst 9800-L WLC
+  othername: Device Type
+
+- name: Device Type#All Device Types#Wireless#EWC-AP
+  description: Cisco Catalyst 9800-EWC-AP Embedded Wireless Controller (EWC)
+  othername: Device Type
+
+- name: Device Type#All Device Types#Wireless#9800-CL
+  description: Cisco Catalyst Catalyst 9800-CL WLC
+  othername: Device Type
+
+- name: Device Type#All Device Types#Wireless#MR
+  description: Cisco Meraki MR
+  othername: Device Type
+
+- name: Device Type#All Device Types#Wireless#MR#MR46
+  description: Cisco Meraki MR46
+  othername: Device Type
+
+
+
+
+#------------------------------------------------------------------------------
+# Device Type#All Device Types#Switches
+#------------------------------------------------------------------------------
+- name: Device Type#All Device Types#Switches
+  description: Switches
+  othername: Device Type
+
+- name: Device Type#All Device Types#Switches#Catalyst
+  description: Cisco Catalyst Switch
+  othername: Device Type
+
+- name: Device Type#All Device Types#Switches#Catalyst#3K
+  description: Cisco Catalyst 3000 Series Switch
+  othername: Device Type
+
+- name: Device Type#All Device Types#Switches#Catalyst#6K
+  description: Cisco Catalyst 6500 Series Switch
+  othername: Device Type
+
+- name: Device Type#All Device Types#Switches#Catalyst#9K
+  description: Cisco Catalyst 9000 Series Switch
+  othername: Device Type
+
+- name: Device Type#All Device Types#Switches#Micro
+  description: Cisco Catalyst Micro Switch
+  othername: Device Type
+
+- name: Device Type#All Device Types#Switches#IE
+  description: Cisco Industrial Ethernet (IE) Switches
+  othername: Device Type
+
+- name: Device Type#All Device Types#Switches#MS
+  description: Cisco Meraki MS
+  othername: Device Type
+
+- name: Device Type#All Device Types#Switches#MS#MS120
+  description: Cisco Meraki MS390
+  othername: Device Type
+
+- name: Device Type#All Device Types#Switches#MS#MS390
+  description: Cisco Meraki MS390
+  othername: Device Type
+
+- name: Device Type#All Device Types#Switches#MS
+  description: Cisco Meraki MS
+  othername: Device Type
+
+
+#------------------------------------------------------------------------------
+# Device Type#All Device Types#Routers
+#------------------------------------------------------------------------------
+- name: Device Type#All Device Types#Routers
+  description: Routers
+  othername: Device Type
+
+
+#------------------------------------------------------------------------------
+# Device Type#All Device Types#SDWAN / VPN
+#------------------------------------------------------------------------------
+
+- name: Device Type#All Device Types#SDWAN#MX
+  description: Cisco Meraki MX
+  othername: Device Type
+
+- name: Device Type#All Device Types#SDWAN#MX#MX68
+  description: Cisco Meraki MX68
+  othername: Device Type
+
+- name: Device Type#All Device Types#SDWAN#MX#vMX
+  description: Cisco Meraki vMX
+  othername: Device Type
+
+- name: Device Type#All Device Types#SDWAN#Z
+  description: Cisco Meraki vMX
+  othername: Device Type
+
+- name: Device Type#All Device Types#SDWAN#Z#Z3
+  description: Cisco Meraki vMX
+  othername: Device Type
+
+
+#------------------------------------------------------------------------------
+# Device Type#All Device Types#VPN
+#------------------------------------------------------------------------------
+
+- name: Device Type#All Device Types#VPN
+  description: VPN
+  othername: Device Type
+
+- name: Device Type#All Device Types#VPN#ASA
+  description: Cisco ASA
+  othername: Device Type
+
+
+
+
+#------------------------------------------------------------------------------
+# Network Device Groups by Operations
+#------------------------------------------------------------------------------
+
+# - name: Operation#Operation
+#   description: All Operations
+#   othername: Operation
+
+# - name: Operation#Operation#Zone1
+#   description: Zone 1
+#   othername: Operation
+
+# - name: Operation#Operation#Zone2
+#   description: Zone 2
+#   othername: Operation
+
+# - name: Operation#Operation#Zone3
+#   description: Zone 3
+#   othername: Operation
+
+# - name: Operation#Operation#Zone4
+#   description: Zone 4
+#   othername: Operation
+
+# - name: Operation#Operation#Zone5
+#   description: Zone 5
+#   othername: Operation
+
+
+
+
+#------------------------------------------------------------------------------
+# Network Device Groups by Regions
+#------------------------------------------------------------------------------
+
+# - name: Region#Region
+#   description: All Regions
+#   othername: Region
+
+# - name: Region#Region#Region1
+#   description: Region 1
+#   othername: Region
+
+# - name: Region#Region#Region2
+#   description: Region 2
+#   othername: Region
+
+# - name: Region#Region#Region3
+#   description: Region 3
+#   othername: Region
+
+# - name: Region#Region#Region4
+#   description: Region 4
+#   othername: Region
+
+# - name: Region#Region#Region5
+#   description: Region 5
+#   othername: Region
+
+
+
+#------------------------------------------------------------------------------
+# Network Device Groups by Corporate Departments
+#------------------------------------------------------------------------------
+
+# - name: Department#Department
+#   description: All Department
+#   othername: Department
+
+# - name: Department#Department#Finance
+#   description: Finance
+#   othername: Department
+
+# - name: Department#Department#HR
+#   description: HR
+#   othername: Department
+
+# - name: Department#Department#IT
+#   description: IT
+#   othername: Department
+
+# - name: Department#Department#Management
+#   description: Management
+#   othername: Department
+
+# - name: Department#Department#Marketing
+#   description: Marketing
+#   othername: Department
+
+# - name: Department#Department#Product
+#   description: Product
+#   othername: Department
+
+# - name: Department#Department#Services
+#   description: Services
+#   othername: Department
+
+# - name: Department#Department#Sales
+#   description: Sales
+#   othername: Department
+
+# - name: Department#Department#Vendors
+#   description: Vendors
+#   othername: Department
+
+
+
+
+#------------------------------------------------------------------------------
+# Network Device Groups by Locations
+#------------------------------------------------------------------------------
+
+- name: Location#All Locations#AMER
+  description: AMER
+  othername: Location
+
+- name: Location#All Locations#AMER#AST
+  description: Austin, TX, US
+  othername: Location
+
+- name: Location#All Locations#AMER#ATL
+  description: Atlanta, GA, US
+  othername: Location
+
+- name: Location#All Locations#AMER#CHI
+  description: Chicago, IL, US
+  othername: Location
+
+- name: Location#All Locations#AMER#HBC
+  description: Huntington Beach, CA, US
+  othername: Location
+
+- name: Location#All Locations#AMER#HRN
+  description: Herndon, VA, US
+  othername: Location
+
+- name: Location#All Locations#AMER#IRV
+  description: Irvine, CA, US
+  othername: Location
+
+- name: Location#All Locations#AMER#MXC
+  description: Mexico City, MX
+  othername: Location
+
+- name: Location#All Locations#AMER#NYC
+  description: New York, NY, US
+  othername: Location
+
+- name: Location#All Locations#AMER#RCD
+  description: Richardson, TX, US
+  othername: Location
+
+- name: Location#All Locations#AMER#RTP
+  description: Raleigh, NC, US
+  othername: Location
+
+- name: Location#All Locations#AMER#SJC
+  description: San Jose, CA, US
+  othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC01
+#   description: San Jose, Buiding 01
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC02
+#   description: San Jose, Buiding 02
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC03
+#   description: San Jose, Buiding 03
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC04
+#   description: San Jose, Buiding 04
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC05
+#   description: San Jose, Buiding 05
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC06
+#   description: San Jose, Buiding 06
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC07
+#   description: San Jose, Buiding 07
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC08
+#   description: San Jose, Buiding 08
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC09
+#   description: San Jose, Buiding 09
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC10
+#   description: San Jose, Buiding 10
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC11
+#   description: San Jose, Buiding 11
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC12
+#   description: San Jose, Buiding 12
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC13
+#   description: San Jose, Buiding 13
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC14
+#   description: San Jose, Buiding 14
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC15
+#   description: San Jose, Buiding 15
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC16
+#   description: San Jose, Buiding 16
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC17
+#   description: San Jose, Buiding 17
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC18
+#   description: San Jose, Buiding 18
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC19
+#   description: San Jose, Buiding 19
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC20
+#   description: San Jose, Buiding 20
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC21
+#   description: San Jose, Buiding 21
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC22
+#   description: San Jose, Buiding 22
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC23
+#   description: San Jose, Buiding 23
+#   othername: Location
+
+# - name: Location#All Locations#AMER#SJC#SJC24
+#   description: San Jose, Buiding 24
+#   othername: Location
+
+# - name: Location#All Locations#APJC
+#   description: APJC
+#   othername: Location
+
+# - name: Location#All Locations#APJC#BGL
+#   description: Bengaluru
+#   othername: Location
+
+# - name: Location#All Locations#APJC#SEO
+#   description: Seoul
+#   othername: Location
+
+# - name: Location#All Locations#APJC#SIN
+#   description: Singapore
+#   othername: Location
+
+# - name: Location#All Locations#APJC#SYD
+#   description: Sydney
+#   othername: Location
+
+# - name: Location#All Locations#APJC#TYO
+#   description: Tokyo
+#   othername: Location
+
+# - name: Location#All Locations#EMEAR
+#   description: EMEAR
+#   othername: Location
+
+# - name: Location#All Locations#EMEAR#AMS
+#   description: Amsterdam
+#   othername: Location
+
+# - name: Location#All Locations#EMEAR#BER
+#   description: Berlin
+#   othername: Location
+
+# - name: Location#All Locations#EMEAR#DUB
+#   description: Dubai
+#   othername: Location
+
+# - name: Location#All Locations#EMEAR#JBG
+#   description: Johannesburg
+#   othername: Location
+
+# - name: Location#All Locations#EMEAR#LON
+#   description: London
+#   othername: Location
+
+# - name: Location#All Locations#EMEAR#MLN
+#   description: Milan
+#   othername: Location
+
+# - name: Location#All Locations#EMEAR#MSW
+#   description: Moscow
+#   othername: Location
+
+# - name: Location#All Locations#EMEAR#PRG
+#   description: Prague
+#   othername: Location
+
+# - name: Location#All Locations#EMEAR#PRS
+#   description: Paris
+#   othername: Location
+
+
+
+
+#------------------------------------------------------------------------------
+# Network Device Groups by Medical Department
+#------------------------------------------------------------------------------
+
+# - name: Department#Department
+#   description: All Department
+#   othername: Department
+
+# - name: Department#Department#Accounts
+#   description: Accounts
+#   othername: Department
+
+# - name: Department#Department#Administration
+#   description: Administration
+#   othername: Department
+
+# - name: Department#Department#Admitting
+#   description: Admitting
+#   othername: Department
+
+# - name: Department#Department#Bacteriology
+#   description: Bacteriology
+#   othername: Department
+
+# - name: Department#Department#Biochemistry
+#   description: Biochemistry
+#   othername: Department
+
+# - name: Department#Department#BloodBank
+#   description: BloodBank
+#   othername: Department
+
+# - name: Department#Department#BusinessManagement
+#   description: BusinessManagement
+#   othername: Department
+
+# - name: Department#Department#Cardiology
+#   description: Cardiology
+#   othername: Department
+
+# - name: Department#Department#Dental
+#   description: Dental
+#   othername: Department
+
+# - name: Department#Department#Dietary
+#   description: Dietary
+#   othername: Department
+
+# - name: Department#Department#EarNoseThroat
+#   description: EarNoseThroat
+#   othername: Department
+
+# - name: Department#Department#Gynecology
+#   description: Gynecology
+#   othername: Department
+
+# - name: Department#Department#Hematology
+#   description: Hematology
+#   othername: Department
+
+# - name: Department#Department#Housekeeping
+#   description: Housekeeping
+#   othername: Department
+
+# - name: Department#Department#InfectiousDisease
+#   description: InfectiousDisease
+#   othername: Department
+
+# - name: Department#Department#Inpatient
+#   description: Inpatient
+#   othername: Department
+
+# - name: Department#Department#Laundry
+#   description: Laundry
+#   othername: Department
+
+# - name: Department#Department#Maintenance
+#   description: Maintenance
+#   othername: Department
+
+# - name: Department#Department#Mechanical
+#   description: Mechanical
+#   othername: Department
+
+# - name: Department#Department#Neurology
+#   description: Neurology
+#   othername: Department
+
+# - name: Department#Department#Nuclear
+#   description: Nuclear
+#   othername: Department
+
+# - name: Department#Department#Nursing
+#   description: Nursing
+#   othername: Department
+
+# - name: Department#Department#Obstetrics
+#   description: Obstetrics
+#   othername: Department
+
+# - name: Department#Department#Opthamology
+#   description: Opthamology
+#   othername: Department
+
+# - name: Department#Department#Orthopedics
+#   description: Orthopedics
+#   othername: Department
+
+# - name: Department#Department#Outpatient
+#   description: Outpatient
+#   othername: Department
+
+# - name: Department#Department#Pediatrics
+#   description: Pediatrics
+#   othername: Department
+
+# - name: Department#Department#Paramedical
+#   description: Paramedical
+#   othername: Department
+
+# - name: Department#Department#Parasitology
+#   description: Parasitology
+#   othername: Department
+
+# - name: Department#Department#Pastoral
+#   description: Pastoral
+#   othername: Department
+
+# - name: Department#Department#Pathology
+#   description: Pathology
+#   othername: Department
+
+# - name: Department#Department#Personnel
+#   description: Personnel
+#   othername: Department
+
+# - name: Department#Department#Pharmacy
+#   description: Pharmacy
+#   othername: Department
+
+# - name: Department#Department#Reconstruction
+#   description: Reconstruction
+#   othername: Department
+
+# - name: Department#Department#Psychiatry
+#   description: Psychiatry
+#   othername: Department
+
+# - name: Department#Department#Purchasing
+#   description: Purchasing
+#   othername: Department
+
+# - name: Department#Department#Radiology
+#   description: Radiology
+#   othername: Department
+
+# - name: Department#Department#Records
+#   description: Records
+#   othername: Department
+
+# - name: Department#Department#Rehabilitation
+#   description: Rehabilitation
+#   othername: Department
+
+# - name: Department#Department#Serology
+#   description: Serology
+#   othername: Department
+
+# - name: Department#Department#Skin
+#   description: Skin
+#   othername: Department
+
+# - name: Department#Department#SocialServices
+#   description: SocialServices
+#   othername: Department
+
+# - name: Department#Department#Sterilization
+#   description: Sterilization
+#   othername: Department
+
+# - name: Department#Department#Supplies
+#   description: Supplies
+#   othername: Department
+
+# - name: Department#Department#Surgery
+#   description: Surgery
+#   othername: Department
+
+# - name: Department#Department#Waste
+#   description: Waste
+#   othername: Department
+
+
+
+
+#------------------------------------------------------------------------------
+# Network Device Groups by University Department
+#------------------------------------------------------------------------------
+
+# - name: Department#Department
+#   description: All Department
+#   othername: Department
+
+# - name: Department#Department#AAG
+#   description: Anthropology and Geography
+#   othername: Department
+
+# - name: Department#Department#AER
+#   description: Aerospace
+#   othername: Department
+
+# - name: Department#Department#AGB
+#   description: Agricultural Business
+#   othername: Department
+
+# - name: Department#Department#AGR
+#   description: Agriculture
+#   othername: Department
+
+# - name: Department#Department#AGS
+#   description: Agricultural Science
+#   othername: Department
+
+# - name: Department#Department#ARC
+#   description: Architecture
+#   othername: Department
+
+# - name: Department#Department#ARE
+#   description: Architectural Engineering
+#   othername: Department
+
+# - name: Department#Department#ART
+#   description: Art and Design
+#   othername: Department
+
+# - name: Department#Department#ASC
+#   description: Animal Science
+#   othername: Department
+
+# - name: Department#Department#BIO
+#   description: Biochemistry
+#   othername: Department
+
+# - name: Department#Department#BM
+#   description: Biomedical
+#   othername: Department
+
+# - name: Department#Department#BSC
+#   description: Biological Sciences
+#   othername: Department
+
+# - name: Department#Department#BUS
+#   description: Business
+#   othername: Department
+
+# - name: Department#Department#CE
+#   description: Civil Engineering
+#   othername: Department
+
+# - name: Department#Department#CES
+#   description: Comparative Ethnic Studies
+#   othername: Department
+
+# - name: Department#Department#CHM
+#   description: Chemistry
+#   othername: Department
+
+# - name: Department#Department#CM
+#   description: Construction Management
+#   othername: Department
+
+# - name: Department#Department#CON
+#   description: Construction
+#   othername: Department
+
+# - name: Department#Department#CPE
+#   description: Computer Engineering
+#   othername: Department
+
+# - name: Department#Department#CRP
+#   description: City and Regional Planning
+#   othername: Department
+
+# - name: Department#Department#CS
+#   description: Computer Science
+#   othername: Department
+
+# - name: Department#Department#ECN
+#   description: Economics
+#   othername: Department
+
+# - name: Department#Department#EE
+#   description: Electrical Engineering
+#   othername: Department
+
+# - name: Department#Department#EGR
+#   description: Engineering
+#   othername: Department
+
+# - name: Department#Department#ENG
+#   description: English
+#   othername: Department
+
+# - name: Department#Department#ES
+#   description: Ethnic Studies
+#   othername: Department
+
+# - name: Department#Department#FS
+#   description: Food Science
+#   othername: Department
+
+# - name: Department#Department#GE
+#   description: General Engineering
+#   othername: Department
+
+# - name: Department#Department#HIS
+#   description: History
+#   othername: Department
+
+# - name: Department#Department#IE
+#   description: Industrial Engineering
+#   othername: Department
+
+# - name: Department#Department#IT
+#   description: Industrial Technology
+#   othername: Department
+
+# - name: Department#Department#JRN
+#   description: Journalism
+#   othername: Department
+
+# - name: Department#Department#KIN
+#   description: Kinesiology
+#   othername: Department
+
+# - name: Department#Department#LA
+#   description: Landscape Architecture
+#   othername: Department
+
+# - name: Department#Department#LAN
+#   description: Languages
+#   othername: Department
+
+# - name: Department#Department#LS
+#   description: Liberal Studies
+#   othername: Department
+
+# - name: Department#Department#MAN
+#   description: Manufacturing Engineering
+#   othername: Department
+
+# - name: Department#Department#MAT
+#   description: Materials Engineering
+#   othername: Department
+
+# - name: Department#Department#MB
+#   description: Microbiology
+#   othername: Department
+
+# - name: Department#Department#ME
+#   description: Mechanical Engineering
+#   othername: Department
+
+# - name: Department#Department#MS
+#   description: Marine Sciences
+#   othername: Department
+
+# - name: Department#Department#MSC
+#   description: Music
+#   othername: Department
+
+# - name: Department#Department#MTH
+#   description: Mathematics
+#   othername: Department
+
+# - name: Department#Department#NRM
+#   description: Natural Resources Management
+#   othername: Department
+
+# - name: Department#Department#NUT
+#   description: Nutrition
+#   othername: Department
+
+# - name: Department#Department#NVE
+#   description: Environmental Engineering
+#   othername: Department
+
+# - name: Department#Department#NVS
+#   description: Environmental Sciences
+#   othername: Department
+
+# - name: Department#Department#PH
+#   description: Public Health
+#   othername: Department
+
+# - name: Department#Department#PHL
+#   description: Philosophy
+#   othername: Department
+
+# - name: Department#Department#PHY
+#   description: Physics
+#   othername: Department
+
+# - name: Department#Department#PLS
+#   description: Plant Sciences
+#   othername: Department
+
+# - name: Department#Department#POL
+#   description: Political Science
+#   othername: Department
+
+# - name: Department#Department#PSY
+#   description: Psychology
+#   othername: Department
+
+# - name: Department#Department#REC
+#   description: Recreation Administration
+#   othername: Department
+
+# - name: Department#Department#SCI
+#   description: Science
+#   othername: Department
+
+# - name: Department#Department#SOC
+#   description: Sociology
+#   othername: Department
+
+# - name: Department#Department#STS
+#   description: Statistics
+#   othername: Department
+
+# - name: Department#Department#SWE
+#   description: Software Engineering
+#   othername: Department
+
+# - name: Department#Department#TA
+#   description: Theatre Arts
+#   othername: Department
+
+# - name: Department#Department#VIT
+#   description: Viticulture
+#   othername: Department
+
+
+
+
+...
