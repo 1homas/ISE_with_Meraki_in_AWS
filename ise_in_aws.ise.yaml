@@ -67,16 +67,6 @@
         to_port: 8443
         cidr_ip: 192.168.0.0/16
         rule_desc: Portals
-      # - proto: tcp
-      #   from_port: 0
-      #   to_port: 65535
-      #   cidr_ip: 192.168.0.0/16
-      #   rule_desc: Allow everything TCP
-      # - proto: udp
-      #   from_port: 0
-      #   to_port: 65535
-      #   cidr_ip: 192.168.0.0/16
-      #   rule_desc: Allow everything UDP
       - proto: udp
         from_port: 1645
         to_port: 1645
@@ -102,6 +92,11 @@
         to_port: 8910
         cidr_ip: 192.168.0.0/16
         rule_desc: pxGrid
+      - proto: tcp
+        from_port: 2083
+        to_port: 2083
+        cidr_ip: 192.168.0.0/16
+        rule_desc: DTLS
       # - proto: tcp
       #   from_port: 9060
       #   to_port: 9060
