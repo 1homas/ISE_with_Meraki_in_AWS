@@ -1,6 +1,5 @@
 ---
 
-
 project_name: ISEinAWS      # use for tagging VMs and resources
 
 
@@ -10,6 +9,19 @@ project_name: ISEinAWS      # use for tagging VMs and resources
 meraki_org_name: thomas
 meraki_vmx_net_name: "{{ project_name }}"
 meraki_net_name: "{{ meraki_vmx_net_name }}"
+
+# VPN hub to connect vMX into
+meraki_vpn_hub:
+  net_name: Lab
+  net_cidr: 192.168.101.0/24
+
+#
+# Cisco Meraki vMX
+#
+meraki_vmx_name: vMX
+aws_vmx_ami: ami-09db17cd0ae68ce37
+aws_vmx_instance_type: c5.xlarge      # c5.large | c5.xlarge
+meraki_vmx_authentication_token: TBD
 
 
 #
@@ -57,15 +69,6 @@ repository_password: C1sco12345
 
 backup_encryption_key: C1sco12345
 
-
-
-#
-# Cisco Meraki vMX
-#
-meraki_vmx_name: vMX
-aws_vmx_ami: ami-09db17cd0ae68ce37
-aws_vmx_instance_type: c5.xlarge      # c5.large | c5.xlarge
-meraki_vmx_authentication_token: TBD
 
 
 ...
