@@ -10,7 +10,7 @@
 #   - Delete public_key
 #   - Delete private_key.pem
 #
-# Run: `ansible-playbook terminate.yaml`
+# Run: `ansible-playbook ise_in_aws.terminate.yaml`
 #
 
 
@@ -36,34 +36,21 @@
   - name: Show instances
     ansible.builtin.debug: var=instances
 
-  # - name: Delete all EC2 instances with tag project:"{{ project_name }}"
-  #   community.aws.ec2_instance:
-  #     state: absent
-  #     filters:
-  #       # instance-state-name: [ "running" ]
-  #       "tag:project": "{{ project_name }}"
-
-
-
-
-  # --- try this :
-
-  # - name: Terminate Instances
-  #   amazon.aws.ec2_instance_facts:
-  #   register: instances
-
-  - name: Show Intances
-    loop: "{{ instances.instances }}"
-    ansible.builtin.debug: msg="{{ item.instance_id }}"
-
-  - name: Terminate
-    loop: "{{instances.instances}}"
-    amazon.aws.ec2:
-      instance_ids: "{{item.instance_id}}"
+  - name: Delete all EC2 instances with tag project:"{{ project_name }}"
+    community.aws.ec2_instance:
       state: absent
-      # wait: yes
+      wait: yes
+      filters:
+        # instance-state-name: [ "running" ]
+        "tag:project": "{{ project_name }}"
 
-  #--- end try
+
+  # - name: Terminate
+  #   loop: "{{instances.instances}}"
+  #   amazon.aws.ec2:
+  #     instance_ids: "{{item.instance_id}}"
+  #     state: absent
+  #     # wait: yes
 
 
 
