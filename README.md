@@ -21,10 +21,10 @@ You will need at least one additional Meraki MX or Z to act as a hub and termina
 1. Clone this repository:  
 
     ```bash
-    git clone https://github.com/1homas/{TBD}
+    git clone https://github.com/1homas/ISE_with_Meraki_in_AWS.git
     ```
 
-1. Create your Python environment and install Ansible:  
+1. Create your Python environment and install Ansible with other Python packages for AWS and ISE :
 
     ```bash
     pip install --upgrade pip
@@ -51,6 +51,14 @@ You will need at least one additional Meraki MX or Z to act as a hub and termina
     export MERAKI_KEY='EXAMPLE_KEYc320e12ee407159487a4cabc41abb'
     ```
 
+1. Export your ISE REST API variables into your shell environment:
+
+    ```bash
+    export ise_username='admin'
+    export ise_password='C1sco12345'
+    export ise_verify=false
+    ```
+
 1. Run the Ansible playbook:  
 
     ```bash
@@ -63,11 +71,15 @@ You will need at least one additional Meraki MX or Z to act as a hub and termina
     ansible-playbook ise.configuration.yaml
     ```
 
-2. When you are finished playing, you may terminate the instances:
+1. When you are finished playing with it, you may terminate the instances:
 
     ```bash
     ansible-playbook ise_in_aws.terminate.yaml
     ```
+
+
+
+
 
 ## Manual Configuration in AWS Console and Meraki Dashboard
 
