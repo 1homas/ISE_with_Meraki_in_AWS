@@ -1,12 +1,35 @@
 ---
 #
-# Run with `ansible-playbook playbook.yaml`
+# Run with `ansible-playbook ise.configuration.yaml`
 #
 - name: ISE Configuration Playbook
-  hosts: ise_deployment
+  hosts: localhost
   gather_facts: no
+  vars_files:
+    vars/main.yaml
   tasks:
 
+
+  - name: Query for ISE instances in project "'{{ project_name }}'"
+    community.aws.ec2_instance_info:    # get all by default
+      filters:
+        instance-state-name: [ 'running' ]
+        "tag:project": "{{ project_name }}"
+        "tag:Name": "ISE"
+    register: instances
+
+  - name: Show instances
+    ansible.builtin.debug: var=instances
+
+  - name: Show Instances
+    loop: "{{ instances.instances }}"
+    ansible.builtin.debug: 
+      msg:
+      - "{{ item.instance_id }} | {{ item.private_ip_address }}"
+
+  - name: Set inventory_hostname
+    ansible.builtin.set_fact:
+      inventory_hostname: "{{ instances.instances[0].private_ip_address }}"
 
   #----------------------------------------------------------------------------
   # Verify ISE is up and APIs are enabled
