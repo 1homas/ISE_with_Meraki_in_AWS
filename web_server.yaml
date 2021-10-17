@@ -1,0 +1,136 @@
+---
+#
+# Run with `ansible-playbook web_server.yaml`
+#
+# - name: Create Web Server
+#   hosts: localhost
+#   gather_facts: no
+#   vars_files:
+#     vars/main.yaml
+#   # vars_prompt:
+#   #   - name: project_name
+#   #     prompt: Project Name
+#   #     default: ISEinAWS
+#   #     private: no
+#   vars:
+#   tasks:
+
+
+#   - name: Get VPC(s)
+#     amazon.aws.ec2_vpc_net_info:
+#       project: "{{ project_name }}"
+#       region: "{{ aws_region }}"
+#     register: vpc
+#     tags:
+#     - vpc
+#     - vpcs
+#   - name: Show vpcs
+#     ansible.builtin.debug: var=vpcs
+#     tags:
+#     - vpc
+#     - vpcs
+
+
+  - name: Create a Security Group for SSH + HTTP + HTTPS
+    amazon.aws.ec2_group:
+      name: SG_SSH+HTTP+HTTPS
+      description: SG_SSH+HTTP+HTTPS
+      vpc_id: "{{ vpc.vpc.id }}"
+      state: present
+      rules:
+        - proto: tcp
+          from_port: 22
+          to_port: 22
+          cidr_ip: 0.0.0.0/0
+        - proto: tcp
+          from_port: 80
+          to_port: 80
+          cidr_ip: 0.0.0.0/0
+        - proto: tcp
+          from_port: 443
+          to_port: 443
+          cidr_ip: 0.0.0.0/0
+      rules_egress:
+        - proto: all
+          cidr_ip: 0.0.0.0/0    # any
+      tags:
+        Project: "{{ project_name }}"
+        StartDate: "{{ ansible_date_time.date }}"
+    register: sg
+
+  - name: Show sg
+    ansible.builtin.debug: var=sg
+
+
+
+
+  - name: Create an web server Instance
+    amazon.aws.ec2:
+      state: present    # present | absent | restarted | running | stopped
+      image: "{{ ami_id }}"
+      instance_type: "{{ instance_type | default('t2.micro') }}"
+      vpc_subnet_id: "{{ subnet.subnet.id }}"
+      group: "{{ sg.group_name }}"
+      key_name: "{{ project_name }}.public_key"   # SSH Key Name
+      count: 1
+      wait: yes   # wait for instance to reach desired state before returning
+      assign_public_ip: yes     # requires vpc_subnet_id
+      instance_tags:
+        Name: "{{ instance_name }}"
+        Project: "{{ project_name }}"
+        StartDate: "{{ ansible_date_time.date }}"
+    register: ec2
+
+  - name: Show ec2
+    ansible.builtin.debug: var=ec2
+
+  - name: Show SSH Commands for Instance
+    ansible.builtin.debug:
+      msg: 
+      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }}.pem ubuntu@{{ ec2.instances[0].public_ip}}"
+      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }}.pem ubuntu@{{ ec2.instances[0].public_dns_name}}"
+
+
+  - name: Update cache 
+    ansible.builtin.apt:
+      update_cache: yes
+
+
+  - name: Upgrade all packages on servers
+    ansible.builtin.apt: 
+      name: "*"
+      state: latest
+
+
+  - name: Install packages
+    ansible.builtin.apt:
+      update_cache: yes
+      autoremove: yes
+      state: present
+      pkg:
+        # - python3
+        # - pip3
+        - htop
+        - net-tools
+        - nginx
+        - nmap
+        # - snapd 
+        - socat
+        - sudo
+        # - openssh-server
+        - tree
+        - vim
+    tags: [ install ]
+
+
+  #
+  # Copy HTML files
+  #
+
+  #
+  # Update Server Configuration
+  #
+
+
+
+...

@@ -1,17 +1,29 @@
 # Cisco ISE with Meraki in AWS
 
-This demo was created for use with the Cisco ISE with Meraki Webinar (https://cs.co/ise-webinars) on October 5, 2021.  Catch the recording in YouTube @ https://cs.co/ise-videos
+This demo was created for use with the [Cisco ISE with Meraki Webinar](https://www.youtube.com/watch?v=snc0HIK0My4) on October 5, 2021.  
 
 This `ise_in_aws.yaml` playbook will create :
 - a VPC and it's other necessary resources
 - ISE 3.1
 - Meraki vMX
 - Linux VM to ping while ISE boots so you will feel confident that it's going to work!
-You will need at least one additional Meraki MX or Z to act as a hub and terminate the other side of the VPN connection.
+You will need at least one additional Meraki MX or Z to act as a VPN hub to terminate the other side of the VPN connection.
 
 
 ![ISE with Meraki in AWS](images/ISE_with_Meraki_in_AWS.png)
 
+
+<div style="width:100%; overflow: hidden;
+  padding-top: 56.25%; /* 16:9 aspect ratio */
+  padding-left: auto;
+  padding-right: auto;
+  position: relative;" class="iframe-container">
+<iframe  style="height: 100%;
+   left: 0;
+   position: absolute;
+   top: 0;
+   width: 100%;"src="https://www.youtube.com/embed/snc0HIK0My4" title="Cisco ISE with Meraki Webinar" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
 
 
 
