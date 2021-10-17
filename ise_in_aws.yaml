@@ -12,24 +12,29 @@
   tasks:
 
 
+  - name: Create SSH KeyPair
+    ansible.builtin.include_tasks: ssh_key_pair.yaml
+
+
   - name: Create VPC
     ansible.builtin.include_tasks: ise_in_aws.vpc.yaml
-
-
-  - name: Create vMX
-    ansible.builtin.include_tasks: ise_in_aws.vmx.yaml
-
-
-  - name: Create PingVM
-    ansible.builtin.include_tasks: ise_in_aws.ping_vm.yaml
 
 
   - name: Create ISE (no wait)
     ansible.builtin.include_tasks: ise_in_aws.ise.yaml
 
 
+  - name: Create vMX
+    ansible.builtin.include_tasks: ise_in_aws.vmx.yaml
+    tags: meraki,vmx
+
+
+  - name: Create PingVM
+    ansible.builtin.include_tasks: ise_in_aws.ping_vm.yaml
+
+
   - name: Wait for ISE to be Initialized
-    ansible.builtin.include_tasks: ise.init_check.yaml
+    ansible.builtin.include_tasks: tasks/ise_initialized.yaml
 
 
 ...
