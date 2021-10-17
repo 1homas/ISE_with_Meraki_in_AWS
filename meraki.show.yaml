@@ -8,18 +8,18 @@
 #  * network(s)
 #  * device(s)
 # 
-# Assumes AWS_* environment variables for task authentication:
+# Assumes MERAKI_KEY environment variable for API authentication:
 #    export MERAKI_KEY='EXAMPLE+KEYc320e12ee407159487a4cabc41abb'
 # 
-# Run with `ansible-playbook show.yaml`
+# Run with `ansible-playbook meraki.show.yaml`
 #
 #------------------------------------------------------------------------------
 
 
 - name: Show Meraki Admins, Organizations, Networks, and Devices
   hosts: localhost
-  vars:
-    meraki_org_name: thomas
+  vars_files:
+    - vars/main.yaml
   gather_facts: no
   tasks:
 
@@ -129,17 +129,15 @@
 
 
 
-  # - name: Query for Site-to-Site VPN hubs
-  #   cisco.meraki.meraki_site_to_site_vpn:
-  #     org_name: "{{ meraki_org_name }}"
-  #     net_name: "{{ meraki_net_name }}"
-  #     state: query
-  #     mode: hub
-  #   register: hubs
+  - name: Query for Site-to-Site VPNs
+    cisco.meraki.meraki_site_to_site_vpn:
+      org_name: "{{ meraki_org_name }}"
+      net_name: "{{ meraki_net_name }}"
+      state: query
+    register: vpns
 
-
-  # - name: hubs
-  #   ansible.builtin.debug: var=hubs
+  - name: vpns
+    ansible.builtin.debug: var=vpns
 
 
 ...
