@@ -15,7 +15,7 @@ This demo environment was created for use with the [Cisco ISE with Meraki Webina
 You will need at least one additional Meraki MX or Z network to act as a VPN hub to terminate the other side of the VPN connection. You should have this configured *before* you run the Ansible playbook because it will attempt to connect the vMX to an existing `Lab` VPN hub or you may edit the `vars/main.yaml` file for your VPN hub network name.
 
 Running `ansible-playbook ise_in_aws.yaml` will create :
-- an AWS VPC and it's other necessary resources
+- AWS VPC, subnets, route tables, internet gateway. For the gory details, see **Manual Configuration in AWS Console and Meraki Dashboard** below.
 - ISE 3.1 instance
 - Meraki vMX instance to secure RADIUS traffic from network devices to ISE
 - Linux VM instance to ping while ISE boots so you will feel confident that the VPN is going to work! You could also turn this into a web server for testing URL redirections or as an internal site that you block.
