@@ -44,7 +44,7 @@
       vpc_subnet_id: "{{ subnet_private.subnet.id }}"
       image_id: "{{ aws_linux_ami }}"
       instance_type: "{{ aws_linux_instance_type }}"
-      key_name: "{{ aws_keypair_name }}"   # SSH Keypair Name
+      key_name: "{{ ssh_keypair_name }}"   # SSH Keypair Name
       security_group: "{{ sg_ping_ssh.group_name }}"
       network:
         assign_public_ip: yes
@@ -62,7 +62,7 @@
     ansible.builtin.debug:
       msg: 
       - "ping {{ ping_vm.instances[0].private_ip_address }}"
-      - "ssh -i ~/.keys/{{ aws_keypair_name }}.pem ec2-user@{{ ping_vm.instances[0].private_ip_address }}"
+      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }}.pem ec2-user@{{ ping_vm.instances[0].private_ip_address }}"
 
 
 ...
