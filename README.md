@@ -1,34 +1,26 @@
 # Cisco ISE with Meraki in AWS
 
-This demo was created for use with the [Cisco ISE with Meraki Webinar](https://www.youtube.com/watch?v=snc0HIK0My4) on October 5, 2021.  
+This demo environment was created for use with the [Cisco ISE with Meraki Webinar](https://www.youtube.com/watch?v=snc0HIK0My4) on October 5, 2021.  Watch the recording of the [Cisco ISE with Meraki Webinar](https://www.youtube.com/watch?v=snc0HIK0My4)  in the [Cisco ISE YouTube Channel](https://cs.co/ise-videos):
 
-This `ise_in_aws.yaml` playbook will create :
-- a VPC and it's other necessary resources
-- ISE 3.1
-- Meraki vMX
-- Linux VM to ping while ISE boots so you will feel confident that it's going to work!
-You will need at least one additional Meraki MX or Z to act as a VPN hub to terminate the other side of the VPN connection.
+[![Cisco ISE with Meraki Webinar](http://img.youtube.com/vi/snc0HIK0My4/0.jpg)](http://www.youtube.com/watch?v=snc0HIK0My4)
 
-
-![ISE with Meraki in AWS](images/ISE_with_Meraki_in_AWS.png)
-
-
-<div style="width:100%; overflow: hidden;
-  padding-top: 56.25%; /* 16:9 aspect ratio */
-  padding-left: auto;
-  padding-right: auto;
-  position: relative;" class="iframe-container">
-<iframe  style="height: 100%;
-   left: 0;
-   position: absolute;
-   top: 0;
-   width: 100%;"src="https://www.youtube.com/embed/snc0HIK0My4" title="Cisco ISE with Meraki Webinar" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-</div>
 
 
 
 
 ## Quick Start
+
+Running `ansible-playbook ise_in_aws.yaml` will create :
+- an AWS VPC and it's other necessary resources
+- ISE 3.1 instance
+- Meraki vMX instance
+- Linux VM instance to ping while ISE boots so you will feel confident that it's going to work!
+
+You will need at least one additional Meraki MX or Z to act as a VPN hub to terminate the other side of the VPN connection.
+
+
+![ISE with Meraki in AWS](images/ISE_with_Meraki_in_AWS.png)
+
 
 1. Clone this repository:  
 
