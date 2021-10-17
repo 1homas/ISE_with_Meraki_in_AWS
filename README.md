@@ -118,22 +118,22 @@ Your AWS instance(s) will have a public IP address so anyone can - and will - ev
 3. Open the **Services** menu and choose **Compute > EC2**
 4. From the left menu, choose **Network & Security > Key Pairs** 
 5. Click **Create Key Pair**, fill in the attributes below, and click **Create Key Pair**
-    - Name: `aws_ssh_key`
+    - Name: `ISEinAWS`
     - Key pair type: **RSA**
     - Private key file format: **.pem**
-6. When prompted, save the `aws_ssh_key.pem` private key file to your home directory in a folder named `.ssh` (`~/.ssh/aws_ssh_key.pem`)
+6. When prompted, save the `ISEinAWS.pem` private key file to your home directory in a folder named `.ssh` (`~/.ssh/ISEinAWS.pem`)
 7. If you are using macOS, Linux, or WSL, change the file permissions so it cannot be viewed by others or accidentally overwritten or deleted by you:
 
     ```bash
-    chmod 400 ~/.ssh/aws_ssh_key.pem
+    chmod 400 ~/.ssh/ISEinAWS.pem
     ```
 
     > 🛑 Do not lose this private key file! You will not be able to login to your AWS EC2 instances configured with the corresponding public key!
 
-When you create instances in AWS, you may choose to put the matching public key into your VMs to authorize your SSH login. To use your key with AWS EC2 instances, you will connect using SSH and authenticate with the `-i` *identity file* option which is your `aws_ssh_key.pem` private key :
+When you create instances in AWS, you may choose to put the matching public key into your VMs to authorize your SSH login. To use your key with AWS EC2 instances, you will connect using SSH and authenticate with the `-i` *identity file* option which is your `ISEinAWS.pem` private key :
 
 ```bash
-ssh -i ~/.ssh/aws_ssh_key.pem admin@{hostname | IP}
+ssh -i ~/.ssh/ISEinAWS.pem admin@{hostname | IP}
 ```
 
 
