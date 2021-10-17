@@ -332,11 +332,9 @@ Now you will connect your other MX in the mesh to the vMX
 3. For the Site-to-Site VPN settings, use:
    - Type: `Hub (Mesh)`
    - Local networks :
-     - Add a Local network:
-       | Network     | VPN mode | Subnet |
-       |-------------|----------|--------|
-       | Main Subnet | Enabled  | `192.168.101.0/24`
-    
+     | Network     | VPN mode | Subnet |
+     |-------------|----------|--------|
+     | Main Subnet | Enabled  | `192.168.101.0/24`
    -  NAT traversal : `⦿ Automatic`
    -  If you have alreaady configured a Meraki MX has a hub, you should see `ISEinAWS` under **Remote VPN participants**!
 4. Click `Save Changes`
@@ -360,15 +358,14 @@ You will need to update the `Private-RT` to the `Lab` MX
     - Destination: `0.0.0.0/0`
     - Target: `Internet Gateway` > `igw-*`
    Click `Save Changes`
-5. You can now try to ping through your site-to-site VPN to the Linux instance 
+5. Your **Private Route Table** should now look like this:
+   | Destination    | Target |
+   |----------------|--------|
+   | 172.31.0.0/16  | local |
+   | 192.168.0.0/16 | i-* / vMX |
+   | 0.0.0.0/0      | igw-* |
+6. You can now try to ping through your site-to-site VPN to the Linux instance 
 
-
-Private Route Table
-| Destination    | Target |
-|----------------|--------|
-| 172.31.0.0/16  | local |
-| 192.168.0.0/16 | i-* / vMX |
-| 0.0.0.0/0      | igw-* |
 
 
 
