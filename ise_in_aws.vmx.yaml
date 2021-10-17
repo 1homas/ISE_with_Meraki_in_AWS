@@ -160,7 +160,7 @@
 
 
 
-  - name: Set vMX in Spoke mode to Lab Hub
+  - name: Set vMX to VPN Spoke mode to Lab Hub
     cisco.meraki.meraki_site_to_site_vpn:
       org_name: "{{ meraki_org_name }}"
       net_name: "{{ meraki_net_name }}"
@@ -168,13 +168,21 @@
       mode: spoke     # use `spoke` to avoid AWS $$$ for `hub` traffic
       hubs:
       - hub_id: "{{ lab_network.data.id }}"
-        use_default_route: no   # send all default route traffic to this hub
+        use_default_route: false  # send all default route traffic to this hub
+      # 🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞
+      # 
+      # subnets:
+      # - local_subnet: 172.31.0.0/16
+      #   use_vpn: true
       #
-      # 💡 Add Local Network
+      # Error - Status: 400
+      # Unrecognized subnet 172.31.0.0/16 for Passthrough MX - only Client VPN subnet(s) permitted
+      # 
+      # Cannot Add Local Network via API! 8-(
+      # Must do it manually in Dashboard:
+      #   Security & SDWAN > Configure > Site-to-Site VPN > Local Networks
       #
-      subnets:
-      - local_subnet: 172.31.0.0/16
-        use_vpn: yes
+      # 🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞
     register: spoke_mode
 
   - name: spoke_mode
