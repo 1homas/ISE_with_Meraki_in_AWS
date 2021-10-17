@@ -38,7 +38,7 @@ You will need at least one additional Meraki MX or Z to act as a hub and termina
 
     If you have any problems installing Python or Ansible, see [Installing Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
 
-2. Export your various keys, tokens, and credentials for ISE, Meraki, and AWS APIs into your shell environment.  You can store these in one or more `*.env` then load them with the `source` command.
+1. Export your various keys, tokens, and credentials for ISE, Meraki, and AWS APIs into your shell environment.  You can store these in one or more `*.env` then load them with the `source` command.
 
     ```bash
     # AWS IAM API Keys
@@ -65,36 +65,33 @@ You will need at least one additional Meraki MX or Z to act as a hub and termina
     source ~/.env/*.env
     ```
 
-3. Edit the `vars/main.yaml` and change the `meraki_org_name` to yours. You will want to review the other settings and change them to match your environment:
+1. Edit the `vars/main.yaml` and change the `meraki_org_name` to yours. You will want to review the other settings and change them to match your environment:
     - AMI identifiers for your AWS region if not `us-west-1`
     - your desired network CIDR ranges
     - your desired instance types
     - your default password(s) or pre-shared keys
 
-4. Run the Ansible playbook:  
+1. Run the Ansible playbook:  
 
     ```bash
     ansible-playbook ise_in_aws.yaml
     ```
 
-5. Due to a Meraki VPN API error, you will need to manually add the vMX Local Network definition in the Meraki Dashboard to advertise the VPC subnet:
-   1. In the [Meraki Dashboard](https://dashboard.meraki.com), view your `AWS_vMX_ISE` network
-   2. Choose `Security & SD-WAN > Site to Site VPN`
-   3. For the Site-to-Site VPN settings, use:
-      - Type: `Hub (Mesh)`
-      - Local network:
-          | Network        | VPN mode | Subnet          |
-          |----------------|----------|-----------------|
-          | Private-Subnet | Enabled  | `172.31.2.0/24` |
+1. Due to a Meraki VPN API error, you will need to manually add the vMX Local Network definition in the Meraki Dashboard to advertise the VPC subnet:
+   1. In the [Meraki Dashboard](https://dashboard.meraki.com), view your `ISEinAWS` network
+   2. Choose `Security & SD-WAN > Configure > Site-to-Site VPN` and for the Local Networks, **Add a Local Network**:
+       | Network        | VPN mode | Subnet          |
+       |----------------|----------|-----------------|
+       | ISEinAWS       | Enabled  | `172.31.0.0/16` |
     > ⚠ If you cannot ping or SSH to the `Ping` Linux VM this is probably the reason!
 
-6. When ISE is up, you may configure it using the additional playbook :
+1. When ISE is up, you may configure it using the additional playbook :
 
     ```bash
     ansible-playbook ise.configuration.yaml
     ```
 
-7. When you are finished playing with it, you may terminate the instances:
+1. When you are finished playing with it, you may terminate the instances:
 
     ```bash
     ansible-playbook ise_in_aws.terminate.yaml
@@ -148,10 +145,10 @@ ssh -i ~/.ssh/aws_ssh_key.pem admin@{hostname | IP}
 1. In the [AWS Console](https://console.aws.amazon.com), go to **Services > Networking & Content Delivery > VPC**
 2. Choose your region: `us-west1`
 3. Select `Create VPC`
-    - Name: `ISE_in_AWS` 
+    - Name: `ISEinAWS` 
     - IPv4 CIDR: `172.31.0.0/16`
     - Tenancy: `Default`
-    - Add Tag: `Project : ISE_in_AWS`
+    - Add Tag: `Project : ISEinAWS`
     Click `Create VPC`
 
 
@@ -163,12 +160,12 @@ ssh -i ~/.ssh/aws_ssh_key.pem admin@{hostname | IP}
 1. From the left menu, select `Virtual Private Cloud > Subnets`
 2. Click `Create Subnet`
 3. Create your Public subnet for the Meraki vMX:
-   1. VPC ID: `ISE_in_AWS`
+   1. VPC ID: `ISEinAWS`
    2. Subnet name: `Public-Subnet`
    3. Availability Zone: `No preference` or *choose your desired AZ*
    4. CIDR: `172.31.1.0/24`
 4. Select `Add a New Subnet` for the Private subnet with ISE
-   1. VPC ID: `ISE_in_AWS`
+   1. VPC ID: `ISEinAWS`
    2. Subnet name: `Private-Subnet`
    3. Availability Zone: `No preference` or *choose your desired AZ*
    4. CIDR: `172.31.2.0/24`
@@ -185,7 +182,7 @@ ssh -i ~/.ssh/aws_ssh_key.pem admin@{hostname | IP}
 1. Click `Create Internet Gateway`
    - Name: `vMX-IG`
    Click `Create Internet Gateway`
-1. Associate the Internet Gateway to the VPC by selecting `Actions > Attach to VPC` > `ISE_in_AWS` and click `Attach Internet Gateway`
+1. Associate the Internet Gateway to the VPC by selecting `Actions > Attach to VPC` > `ISEinAWS` and click `Attach Internet Gateway`
 
 
 
@@ -197,12 +194,12 @@ ssh -i ~/.ssh/aws_ssh_key.pem admin@{hostname | IP}
 2. Click `Create Route Table`
 3. Create the *Public* Route Table
    - Name: `Public-RT`
-   - VPC: `ISE_in_AWS`
+   - VPC: `ISEinAWS`
    Click `Create Route Table`
 4. From the left menu, select `Virtual Private Cloud > Route Tables`
 5. Create the *Private* Route Table
    - Name: `Private-RT`
-   - VPC: `ISE_in_AWS`
+   - VPC: `ISEinAWS`
    Click `Create Route Table`
 6. Associate the respective route tables and subnets:
    1. Check ✅ `Public-RT` and select the `Subnet Assocations` tab below
@@ -233,7 +230,7 @@ Public Route Table
 
 1. Login to the [Meraki Dashboard](https://dashboard.meraki.com)
 2. From the network menu, choose `Create a New Network`
-    - Network name: `AWS_vMX_ISE`
+    - Network name: `ISEinAWS`
     - Network type: `Security Appliance`
     - Network Configuration: `Default Meraki configuration`
     - Check ✅ the **VMX Serial Number** you want to use
@@ -254,7 +251,7 @@ Public Route Table
 2. For **Choose Action**, choose `Launch Through EC2` then click `Launch`
 3. Choose the appropriate Instance Type, `c5.large` and click `Next: Configure Instance Details`
 4. For Configure Instance Details use the settings:
-    - Network: `vpc-* | ISE_in_AWS`
+    - Network: `vpc-* | ISEinAWS`
     - Subnet: `subnet-* | Public-Subnet`
     - Auto-assign Public IP : `Enable`
     - User data: `As Text`, *paste the vMX Authentication Token from the Meraki Dashboard*
@@ -271,7 +268,7 @@ Public Route Table
      - Description: `Allow All`
 11. Click `Review and Launch`
 12. Click `Launch`
-13. Select your Key Pair `ise_in_aws.pem`, acknowledge that you have the private key file and click `Launch Instances`
+13. Select your Key Pair `ISEinAWS.pem`, acknowledge that you have the private key file and click `Launch Instances`
 14. After launching, select `View Instances` and you should see your instance running!
 15. Check ✅ your VMX, choose `Actions > Networking > Change Source / destination check`, ✅  `Stop` Source / destination checking and click `Save`
 
@@ -286,7 +283,7 @@ Public Route Table
 1. Find a free tier Linux AMI such as the `Amazon Linux 2 AMI (HVM)` and click it's `Select` button
 2. Choose the `t2.micro` instance type and click `Next: Configure Instance Details`
 3. For Configure Instance Details use the settings:
-    - Network: `vpc-* | ISE_in_AWS`
+    - Network: `vpc-* | ISEinAWS`
     - Subnet: `subnet-* | Private-Subnet`
     - Auto-assign Public IP : `Enable)`
 4. Click `Next: Add Storage`
@@ -302,12 +299,12 @@ Public Route Table
      - Source: `0.0.0.0/0`
 9. Click `Review and Launch`
 10. Click `Launch`
-11. Select your Key Pair `ise_in_aws.pem`, acknowledge that you have the private key file and click `Launch Instances`
+11. Select your Key Pair `ISEinAWS.pem`, acknowledge that you have the private key file and click `Launch Instances`
 12. Click `View Instances` and you should see your instance running!
 13. Login to your Linux VM is you need to do any troubleshooting or add software:
 
     ```bash
-    ssh -i "~/.keys/ise_in_aws.pem" ec2-user@{ hostname | IP } 
+    ssh -i "~/.ssh/ISEinAWS.pem" ec2-user@{ hostname | IP } 
     ```
 
 
@@ -316,8 +313,8 @@ Public Route Table
 
 ### Create Site-to-Site VPN Connection
 
-1. In the [Meraki Dashboard](https://dashboard.meraki.com), view your `AWS_vMX_ISE` network
-2. Choose `Security & SD-WAN > Site to Site VPN`
+1. In the [Meraki Dashboard](https://dashboard.meraki.com), view your `ISEinAWS` network
+2. Choose `Security & SD-WAN > Configure > Site-to-Site VPN`
 3. For the Site-to-Site VPN settings, use:
    - Type: `Spoke`
    - Local network:
@@ -343,7 +340,7 @@ Now you will connect your other MX in the mesh to the vMX
        | IOT     | Enabled  | `192.168.100.128/26`
        | Guest   | Enabled  | `192.168.100.192/26`
    -  NAT traversal : `⦿ Automatic`
-   -  If you have alreaady configured a Meraki MX has a hub, you should see `AWS_vMX_ISE` under **Remote VPN participants**!
+   -  If you have alreaady configured a Meraki MX has a hub, you should see `ISEinAWS` under **Remote VPN participants**!
 4. Click `Save Changes`
 
 
@@ -385,7 +382,7 @@ Private Route Table
 3. SSH to the instance:
 
     ```bash
-    ssh -i ~/.keys/ise_in_aws.pem ec2-user@172.31.2.35
+    ssh -i ~/.ssh/ISEinAWS.pem ec2-user@172.31.2.35
     ```
 
 
@@ -409,7 +406,7 @@ Private Route Table
     - Stack Name: `ISE-3-1-518`
     - AMIid: `ami-00a1a68f5519aa150`    # ISE in us-west-1
     - Hostname: `ise`
-    - KeyName / Instance Key Pair: `ise_in_aws`
+    - KeyName / Instance Key Pair: `ISEinAWS`
     - Management Security Group: `ISE`
     - Management Network: `Private-Subnet`
     - TimeZone: `America/Los_Angeles`
@@ -439,7 +436,7 @@ To create another instance:
 
 SSH to the ISE console
 ```bash
-ssh -i "~/.keys/ise_in_aws.pem" admin@{ hostname | IP }
+ssh -i "~/.ssh/ISEinAWS.pem" admin@{ hostname | IP }
 ```
 
 
