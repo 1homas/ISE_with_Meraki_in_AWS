@@ -10,16 +10,16 @@ This demo environment was created for use with the [Cisco ISE with Meraki Webina
 
 ## Quick Start
 
+![ISE with Meraki in AWS](images/ISE_with_Meraki_in_AWS.png)
+
+You will need at least one additional Meraki MX or Z network to act as a VPN hub to terminate the other side of the VPN connection. You should have this configured *before* you run the Ansible playbook because it will attempt to connect the vMX to an existing `Lab` VPN hub or you may edit the `vars/main.yaml` file for your VPN hub network name.
+
 Running `ansible-playbook ise_in_aws.yaml` will create :
 - an AWS VPC and it's other necessary resources
 - ISE 3.1 instance
-- Meraki vMX instance
-- Linux VM instance to ping while ISE boots so you will feel confident that it's going to work!
+- Meraki vMX instance to secure RADIUS traffic from network devices to ISE
+- Linux VM instance to ping while ISE boots so you will feel confident that the VPN is going to work! You could also turn this into a web server for testing URL redirections or as an internal site that you block.
 
-You will need at least one additional Meraki MX or Z to act as a VPN hub to terminate the other side of the VPN connection.
-
-
-![ISE with Meraki in AWS](images/ISE_with_Meraki_in_AWS.png)
 
 
 1. Clone this repository:  
@@ -29,7 +29,7 @@ You will need at least one additional Meraki MX or Z to act as a VPN hub to term
     cd ISE_with_Meraki_in_AWS
     ```
 
-1. Create your Python environment and install Ansible with other Python packages for AWS and ISE :
+2. Create your Python environment and install Ansible with other Python packages for AWS and ISE :
 
     ```bash
     pip install --upgrade pip
@@ -42,7 +42,7 @@ You will need at least one additional Meraki MX or Z to act as a VPN hub to term
 
     If you have any problems installing Python or Ansible, see [Installing Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
 
-1. Export your various keys, tokens, and credentials for ISE, Meraki, and AWS APIs into your shell environment.  You can store these in one or more `*.env` then load them with the `source` command.
+3. Export your various keys, tokens, and credentials for ISE, Meraki, and AWS APIs into your shell environment.  You can store these in one or more `*.env` then load them with the `source` command.
 
     ```bash
     # AWS IAM API Keys
@@ -69,19 +69,19 @@ You will need at least one additional Meraki MX or Z to act as a VPN hub to term
     source ~/.env/*.env
     ```
 
-1. Edit the `vars/main.yaml` and change the `meraki_org_name` to yours. You will want to review the other settings and change them to match your environment:
+4. Edit the `vars/main.yaml` and change the `meraki_org_name` to yours. You will want to review the other settings and change them to match your environment:
     - AMI identifiers for your AWS region if not `us-west-1`
     - your desired network CIDR ranges
     - your desired instance types
     - your default password(s) or pre-shared keys
 
-1. Run the Ansible playbook:  
+5. Run the Ansible playbook:  
 
     ```bash
     ansible-playbook ise_in_aws.yaml
     ```
 
-1. Due to a Meraki VPN API error, you will need to manually add the vMX Local Network definition in the Meraki Dashboard to advertise the VPC subnet:
+6. Due to a Meraki VPN API error, you will need to manually add the vMX Local Network definition in the Meraki Dashboard to advertise the VPC subnet:
    1. In the [Meraki Dashboard](https://dashboard.meraki.com), view your `ISEinAWS` network
    2. Choose `Security & SD-WAN > Configure > Site-to-Site VPN` and for the Local Networks, **Add a Local Network**:
        | Network        | VPN mode | Subnet          |
@@ -89,13 +89,13 @@ You will need at least one additional Meraki MX or Z to act as a VPN hub to term
        | ISEinAWS       | Enabled  | `172.31.0.0/16` |
     > ⚠ If you cannot ping or SSH to the `Ping` Linux VM this is probably the reason!
 
-1. When ISE is up, you may configure it using the additional playbook :
+7. When ISE is up, you may configure it using the additional playbook :
 
     ```bash
     ansible-playbook ise.configuration.yaml
     ```
 
-1. When you are finished playing with it, you may terminate the instances:
+8. When you are finished playing with it, you may terminate the instances:
 
     ```bash
     ansible-playbook ise_in_aws.terminate.yaml
@@ -444,13 +444,14 @@ ssh -i "~/.ssh/ISEinAWS.pem" admin@{ hostname | IP }
 
 ## Resources
 - [Installing Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) for all platforms
-- [Cisco Meraki vMX en AWS](https://www.youtube.com/watch?v=KfbihKbe-HI)
+- Documentation for Ansible collections:  
+  - [cisco.ise](https://ciscoise.github.io/ansible-ise/main/plugins/index.html)  
+  - [cisco.meraki](https://docs.ansible.com/ansible/latest/collections/cisco/meraki/index.html)  
+  - [amazon.aws](https://docs.ansible.com/ansible/latest/collections/amazon/aws/)  
+  - [community.aws](https://docs.ansible.com/ansible/latest/collections/community/aws/)  
+- [Cisco Meraki vMX en AWS](https://www.youtube.com/watch?v=KfbihKbe-HI) - YouTube video for vMX in AWS (Spanish)
 - [AWS re:Invent 2019: AWS Networking Fundamentals (NET201-R2)](https://www.youtube.com/watch?v=gj4CD73Wmns) provides an excellent overview of the networking elements that are automatically created when using the [Launch Instance wizard](https://console.aws.amazon.com/ec2/home#LaunchInstanceWizard)
-- [amazon.aws](https://docs.ansible.com/ansible/latest/collections/amazon/aws/) Ansible collection documentation
-- [cisco.meraki](https://docs.ansible.com/ansible/latest/collections/cisco/meraki/index.html) Ansible Documentation
-- [community.aws](https://docs.ansible.com/ansible/latest/collections/community/aws/) Ansible collection documentation
-- [cisco.ise](https://ciscoise.github.io/ansible-ise/main/plugins/index.html) Ansible Documentation
-- [Best practices for managing AWS access keys](https://docs.aws.amazon.com/general/latest/gr/aws-access-keys-best-practices.html)
+- [Best practices for managing AWS access keys](https://docs.aws.amazon.com/general/latest/gr/aws-access-keys-best-practices.html)  
 
 
 
