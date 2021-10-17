@@ -17,16 +17,8 @@
 - name: Show AWS Info Playbook
   gather_facts: no
   hosts: localhost
-  vars:
-    aws_region: us-west-1
-    project_name: ISEinAWS
-
-  # vars_prompt:
-  #   - name: region
-  #     prompt: AWS Region
-  #     default: us-west-1
-  #     private: no
-
+  vars_files:
+    - vars/main.yaml
   tasks:
 
 
@@ -126,6 +118,47 @@
     tags:
     - vpc
     - vpcs
+
+
+
+
+  #
+  # EC2 Instances
+  #
+  - name: Query AWS EC2 Instances
+    community.aws.ec2_instance_info:
+      region: "{{ aws_region }}"
+      filters:
+        "tag:project": "{{ project_name }}"
+        instance-state-name: running
+    register: instances
+    tags:
+      - ec2
+      - instances
+
+  - name: Show instances
+    ansible.builtin.debug: var=instances
+    tags:
+      - ec2
+      - instances
+
+  - name: List of AWS EC2 Instances
+    when: instances is defined and instances != []
+    loop: "{{ instances.instances }}"
+    vars: 
+      instance_names: []
+      attrs: ['image_id', 'instance_id', 'instance_type', 'key_name', 'private_ip_address', 'public_ip_address' ]
+    ansible.builtin.set_fact:
+      instance_names: "{{ instance_names + [ item.tags.Name  ] }}"
+    tags:
+      - ec2
+      - instances
+
+  - name: Show AWS EC2 Instances by Name
+    ansible.builtin.debug: var=instance_names
+    tags:
+      - ec2
+      - instances
 
 
 
@@ -232,6 +265,8 @@
     - cft
     - cloudformation
     - stacks
+
+
 
 
   #
