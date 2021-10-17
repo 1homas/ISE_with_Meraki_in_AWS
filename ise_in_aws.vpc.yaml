@@ -3,7 +3,7 @@
 
   # - name: Show VPC(s)
   #   amazon.aws.ec2_vpc_net:
-  #     Name: "{{ aws_vpc_name }}"
+  #     name: "{{ aws_vpc_name }}"
   #     cidr_block:  "{{ aws_vpc_cidr }}"
   #     region: "{{ aws_region }}"
   #   register: vpc
@@ -23,28 +23,6 @@
   # - name: Show vpc
   #   ansible.builtin.debug: var=vpc
 
-
-
-
-  # - name: Create New VPC if it does not exist
-  #   block:
-  #   - name: block Create VPC
-  #     when: vpc.vpc.state != 'available'
-  #     amazon.aws.ec2_vpc_net:
-  #       state: present
-  #       Name: "{{ aws_vpc_name }}"
-  #       cidr_block:  "{{ aws_vpc_cidr }}"
-  #       region: "{{ aws_region }}"
-  #       # tags:
-  #       #   Name: "vpc_{{ project_name }}"
-  #       #   project: "{{ project_name }}"
-  #       #   start_date: "{{ ansible_date_time.date }}"
-  #     register: vpc
-
-  #   # - name: block Show vpc
-  #   #   when: vpc.vpc.state != 'available'
-  #   #   ansible.builtin.debug: var=vpc
-  #   tags: create
 
 
 
