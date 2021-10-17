@@ -33,8 +33,8 @@
         "tag:project": "{{ project_name }}"
     register: instances
 
-  - name: Show instances
-    ansible.builtin.debug: var=instances
+  # - name: Show instances
+  #   ansible.builtin.debug: var=instances
 
   - name: Delete all EC2 instances with tag project:"{{ project_name }}"
     community.aws.ec2_instance:
@@ -173,14 +173,9 @@
 
 
 
-  - name: "Delete {{ project_name }}.public_key"
-    amazon.aws.ec2_key:
-      name: "{{ project_name }}.public_key"
-      state: absent
-
-  - name: "Delete {{ playbook_dir }}/{{ project_name }}.private_key.pem"
+  - name: Delete {{ ssh_keypair_directory }}/{{ ssh_keypair_name }}.pem
     ansible.builtin.file:
-      path: "{{ playbook_dir }}/{{ project_name }}.private_key.pem"
+      path: "{{ ssh_keypair_directory }}/{{ ssh_keypair_name }}.pem"
       state: absent
 
 
