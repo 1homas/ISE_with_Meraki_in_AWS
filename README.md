@@ -22,6 +22,7 @@ You will need at least one additional Meraki MX or Z to act as a hub and termina
 
     ```bash
     git clone https://github.com/1homas/ISE_with_Meraki_in_AWS.git
+    cd ISE_with_Meraki_in_AWS
     ```
 
 1. Create your Python environment and install Ansible with other Python packages for AWS and ISE :
@@ -37,41 +38,63 @@ You will need at least one additional Meraki MX or Z to act as a hub and termina
 
     If you have any problems installing Python or Ansible, see [Installing Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
 
-1. Export your AWS Access & Secret keys into your shell environment:  
+2. Export your various keys, tokens, and credentials for ISE, Meraki, and AWS APIs into your shell environment.  You can store these in one or more `*.env` then load them with the `source` command.
 
     ```bash
+    # AWS IAM API Keys
     export AWS_REGION='us-west-1'
     export AWS_ACCESS_KEY='AKIAIOSF/EXAMPLE+KEY'
     export AWS_SECRET_KEY='wJalrXUtnFEMI/K7MDENG/bPxRfi/EXAMPLE+KEY'
     ```
 
-1. Export your Meraki authentication key into your shell environment:  
-
     ```bash
+    # Meraki API Authentication Key
     export MERAKI_KEY='EXAMPLE_KEYc320e12ee407159487a4cabc41abb'
     ```
 
-1. Export your ISE REST API variables into your shell environment:
-
     ```bash
+    # ISE REST API Credentials
     export ise_username='admin'
     export ise_password='C1sco12345'
     export ise_verify=false
     ```
 
-1. Run the Ansible playbook:  
+    ```bash
+    # Keep *.env files in a .env folder in your home directory
+    # Use source to load environment variables from *.env files
+    source ~/.env/*.env
+    ```
+
+3. Edit the `vars/main.yaml` and change the `meraki_org_name` to yours. You will want to review the other settings and change them to match your environment:
+    - AMI identifiers for your AWS region if not `us-west-1`
+    - your desired network CIDR ranges
+    - your desired instance types
+    - your default password(s) or pre-shared keys
+
+4. Run the Ansible playbook:  
 
     ```bash
     ansible-playbook ise_in_aws.yaml
     ```
 
-1. When ISE is up, you may configure it using the additional playbook :
+5. Due to a Meraki VPN API error, you will need to manually add the vMX Local Network definition in the Meraki Dashboard to advertise the VPC subnet:
+   1. In the [Meraki Dashboard](https://dashboard.meraki.com), view your `AWS_vMX_ISE` network
+   2. Choose `Security & SD-WAN > Site to Site VPN`
+   3. For the Site-to-Site VPN settings, use:
+      - Type: `Hub (Mesh)`
+      - Local network:
+          | Network        | VPN mode | Subnet          |
+          |----------------|----------|-----------------|
+          | Private-Subnet | Enabled  | `172.31.2.0/24` |
+    > ⚠ If you cannot ping or SSH to the `Ping` Linux VM this is probably the reason!
+
+6. When ISE is up, you may configure it using the additional playbook :
 
     ```bash
     ansible-playbook ise.configuration.yaml
     ```
 
-1. When you are finished playing with it, you may terminate the instances:
+7. When you are finished playing with it, you may terminate the instances:
 
     ```bash
     ansible-playbook ise_in_aws.terminate.yaml
@@ -83,13 +106,15 @@ You will need at least one additional Meraki MX or Z to act as a hub and termina
 
 ## Manual Configuration in AWS Console and Meraki Dashboard
 
-In case you wondered exactly what these scripts are doing ... here is how to do it the hard way!  It's good to understand what the time spent on automation is saving you from!
+In case you wondered exactly what these Ansible playbooks are doing ... here is how to do it the hard way!  If you want to do it the old-fashioned way or just understand what the time spent on automation is saving you from!
+
+
 
 
 
 ### Create an SSH Key Pair
 
-Your example AWS instance(s) will have a public IP address so anyone can - and will - eventually find it and try to login and use it. For this reason, AWS does not allow the use of normal passwords. Instead, they use a private/public cryptographic key pair which is *much* stronger than a password.
+Your AWS instance(s) will have a public IP address so anyone can - and will - eventually find it and try to login and use it. For this reason, AWS does not allow the use of normal passwords. Instead, they use a private/public cryptographic key pair which is *much* stronger than a password.
 
 1. Login to the [Amazon Web Services (AWS) Console](https://console.aws.amazon.com) as a root user (not IAM user) of your account
 2. Verify or choose your **Region** in the drop-down menu next to your account name
@@ -294,7 +319,7 @@ Public Route Table
 1. In the [Meraki Dashboard](https://dashboard.meraki.com), view your `AWS_vMX_ISE` network
 2. Choose `Security & SD-WAN > Site to Site VPN`
 3. For the Site-to-Site VPN settings, use:
-   - Type: `Hub (Mesh)`
+   - Type: `Spoke`
    - Local network:
        | Network        | VPN mode | Subnet          |
        |----------------|----------|-----------------|
