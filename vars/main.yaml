@@ -1,48 +1,40 @@
 ---
 
-project_name: ISEinAWS      # use for tagging VMs and resources
+project_name: ISEinAWS        # use for tagging VMs and resources
+provider: AWS                 # infrastructure provider for environment options
 
-
-#
-# Meraki Org & Networks
-#
-meraki_org_name: thomas
-meraki_vmx_net_name: "{{ project_name }}"
-meraki_net_name: "{{ meraki_vmx_net_name }}"
-
-# VPN hub to connect vMX into
-meraki_vpn_hub:
-  net_name: Lab
-  net_cidr: 192.168.101.0/24
-
-#
-# Cisco Meraki vMX
-#
-meraki_vmx_name: vMX
-aws_vmx_ami: ami-09db17cd0ae68ce37
-aws_vmx_instance_type: c5.xlarge      # c5.large | c5.xlarge
-meraki_vmx_authentication_token: TBD
-
-
-#
-# Linux "Ping" VM
-#
-aws_linux_ami: ami-04b6c97b14c54de18   # Amazon Linux 2 AMI (HVM), SSD Volume Type
-aws_linux_instance_type: t2.micro
+meraki_org_name: thomas       # your Meraki Organization
+meraki_vmx_name: vMX          # Name in AWS
+meraki_net_name: "{{ project_name }}"   # Name in Meraki Dashboard
+meraki_vpn_hub:               # Meraki VPN hub to connect vMX into
+  net_name: Lab               #   Network name in Dashboard
+  net_cidr: 192.168.101.0/24  #   VPN Hub Network CIDR
 
 
 #
 # AWS VPC
 #
-aws_keypair_name: ise_in_aws
-aws_region: us-west-1
-aws_vpc_name: ISEinAWS
+aws_region: "{{ lookup('env','AWS_REGION') | default('us-west-1') }}"
+aws_vpc_name: "{{ project_name }}"
 aws_vpc_cidr: 172.31.0.0/16
 aws_public_subnet_cidr:  172.31.1.0/24
 aws_private_subnet_cidr: 172.31.2.0/24
 aws_public_access_cidr: 0.0.0.0/0
-cidr_anywhere_ipv4: 0.0.0.0/0
 
+ssh_keypair_directory: ~/.ssh/
+ssh_keypair_name: "{{ project_name }}"
+
+#
+# Linux "Ping" VM
+#
+aws_linux_ami: ami-04b6c97b14c54de18    # us-west-1 Amazon Linux 2 AMI (HVM)
+aws_linux_instance_type: t2.micro
+
+#
+# vMX AMI
+#
+aws_vmx_ami: ami-09db17cd0ae68ce37      # us-west-1
+aws_vmx_instance_type: c5.xlarge        # c5.large | c5.xlarge
 
 #
 # Cisco ISE VM
@@ -53,12 +45,11 @@ aws_ise_instance_type: c5.4xlarge
 ise_base_hostname: ise
 ise_username: admin
 ise_password: "C1sco12345"
+ise_verify: false
 ise_ntp_server: time.nist.gov
 ise_dns_server: 208.67.222.222
 ise_domain: aws.local
 ise_timezone: America/Los_Angeles
-
-ise_verify: False
 
 radius_secret: C1sco12345
 snmp_secret: C1sco12345
@@ -68,7 +59,6 @@ repository_username: ise
 repository_password: C1sco12345
 
 backup_encryption_key: C1sco12345
-
 
 
 ...
