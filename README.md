@@ -233,7 +233,7 @@ Public Route Table
     - Network name: `ISEinAWS`
     - Network type: `Security Appliance`
     - Network Configuration: `Default Meraki configuration`
-    - Check ✅ the **VMX Serial Number** you want to use
+    - Check ✅ the **vMX Serial Number** you want to use
     Click `Create Network`
 3. Scroll down and select `Generate Authentication Token` and copy the text for use in the `User Data` of the vMX instance in the next section.
 
@@ -257,7 +257,7 @@ Public Route Table
     - User data: `As Text`, *paste the vMX Authentication Token from the Meraki Dashboard*
 5. Click `Next: Add Storage`
 6. Click `Next: Add Tags`
-7. Click `Add Tag` and use a key:value of `Name` : `VMX`
+7. Click `Add Tag` and use a key:value of `Name` : `vMX`
 8. Click `Next: Configure Security Group`
 9. For the Security Group, use the settings:
    - Assign a security group : `⦿ Create a new security group`
@@ -270,7 +270,7 @@ Public Route Table
 12. Click `Launch`
 13. Select your Key Pair `ISEinAWS.pem`, acknowledge that you have the private key file and click `Launch Instances`
 14. After launching, select `View Instances` and you should see your instance running!
-15. Check ✅ your VMX, choose `Actions > Networking > Change Source / destination check`, ✅  `Stop` Source / destination checking and click `Save`
+15. Check ✅ your vMX, choose `Actions > Networking > Change Source / destination check`, ✅  `Stop` Source / destination checking and click `Save`
 
 
 
@@ -328,17 +328,15 @@ Public Route Table
 Now you will connect your other MX in the mesh to the vMX
 
 1. Choose your Meraki `Lab` network for your physical, on-premise MX
-2. Choose `Security & SD-WAN > Site to Site VPN`
+2. Choose `Security & SD-WAN > Configure > Site to Site VPN`
 3. For the Site-to-Site VPN settings, use:
    - Type: `Hub (Mesh)`
    - Local networks :
      - Add a Local network:
-       | Network | VPN mode | Subnet |
-       |---------|----------|--------|
-       | Data    | Enabled  | `192.168.100.0/24`
-       | Voice   | Enabled  | `192.168.100.64/26`
-       | IOT     | Enabled  | `192.168.100.128/26`
-       | Guest   | Enabled  | `192.168.100.192/26`
+       | Network     | VPN mode | Subnet |
+       |-------------|----------|--------|
+       | Main Subnet | Enabled  | `192.168.101.0/24`
+    
    -  NAT traversal : `⦿ Automatic`
    -  If you have alreaady configured a Meraki MX has a hub, you should see `ISEinAWS` under **Remote VPN participants**!
 4. Click `Save Changes`
@@ -356,7 +354,7 @@ You will need to update the `Private-RT` to the `Lab` MX
 3. Click `Edit Routes` 
 4. Select `Add Route`
     - Destination: `192.168.0.0/16`
-    - Target: `Instance` > `i-* | VMX`
+    - Target: `Instance` > `i-* | vMX`
    Click `Save Changes`
 4. Select `Add Route`
     - Destination: `0.0.0.0/0`
@@ -369,7 +367,7 @@ Private Route Table
 | Destination    | Target |
 |----------------|--------|
 | 172.31.0.0/16  | local |
-| 192.168.0.0/16 | i-* / VMX |
+| 192.168.0.0/16 | i-* / vMX |
 | 0.0.0.0/0      | igw-* |
 
 
@@ -401,7 +399,7 @@ Private Route Table
     -  Region: `us-west`
     Click `Continue to Launch`
 4. For Launch this Software, choose: `Launch CloudFormation` then click `Launch`
-5. Choose `Upload a template file`, choose your file (`ISE-3-1-518.CFT.yaml`) and click `Next`
+5. Choose `Upload a template file`, choose your file (`files/ISE-3-1-518.CFT.yaml`) and click `Next`
 6. Verify and complete the ISE CloudFormation Parameters then click `Next`
     - Stack Name: `ISE-3-1-518`
     - AMIid: `ami-00a1a68f5519aa150`    # ISE in us-west-1
