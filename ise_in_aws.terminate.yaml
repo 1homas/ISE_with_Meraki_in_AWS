@@ -16,13 +16,13 @@
 
 - name: Terminate AWS EC2 Instances for Project "{{ project_name }}"
   hosts: localhost
+  vars_files: 
+    - vars/main.yaml
   vars_prompt:
     - name: project_name
       prompt: Project Name
-      default: ISEinAWS
+      default: "{{ project_name }}"
       private: no
-  vars: 
-    meraki_org_name: thomas
   tasks:
 
 
