@@ -215,12 +215,11 @@ ssh -i ~/.ssh/ISEinAWS.pem admin@{hostname | IP}
 
 1. Check ✅ `Public-RT`, select the `Routes` tab below, and click `Edit Routes`
 2. Click `Add Route` and add a `0.0.0.0/0` default route to the target type `Internet Gateway` > `igw-*` then click `Save Changes`
-
-Public Route Table
-| Destination   | Target |
-|---------------|--------|
-| 172.31.0.0/16 | local  |
-| 0.0.0.0/0     | igw-0ed2b71a84a9588ac |
+3. Your Public Route Table should now look like this:
+    | Destination     | Target                |
+    |-----------------|-----------------------|
+    | `172.31.0.0/16` | local                 |
+    | `0.0.0.0/0`     | igw-0ed2b71a84a9588ac |
 
 
 
@@ -331,7 +330,8 @@ Now you will connect your other MX in the mesh to the vMX
 2. Choose `Security & SD-WAN > Configure > Site to Site VPN`
 3. For the Site-to-Site VPN settings, use:
    - Type: `Hub (Mesh)`
-   - Local networks :
+   - Local Networks :
+     > 💡 you may use a Single LAN or VLANs - I used a Single LAN to keep it simple
      | Network     | VPN mode | Subnet |
      |-------------|----------|--------|
      | Main Subnet | Enabled  | `192.168.101.0/24`
@@ -359,11 +359,11 @@ You will need to update the `Private-RT` to the `Lab` MX
     - Target: `Internet Gateway` > `igw-*`
    Click `Save Changes`
 5. Your **Private Route Table** should now look like this:
-   | Destination    | Target |
-   |----------------|--------|
-   | 172.31.0.0/16  | local |
-   | 192.168.0.0/16 | i-* / vMX |
-   | 0.0.0.0/0      | igw-* |
+   | Destination      | Target    |
+   |------------------|-----------|
+   | `172.31.0.0/16`  | local     |
+   | `192.168.0.0/16` | i-* / vMX |
+   | `0.0.0.0/0`      | igw-*     |
 6. You can now try to ping through your site-to-site VPN to the Linux instance 
 
 
