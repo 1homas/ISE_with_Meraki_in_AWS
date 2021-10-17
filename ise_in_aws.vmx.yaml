@@ -10,7 +10,7 @@
   #
   # Timezones: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
   #
-  - name: "Create a v/MX Network '{{ meraki_org_name }}:{{ meraki_net_name }}'"
+  - name: Create a vMX Network '{{ meraki_org_name }}:{{ meraki_net_name }}'
     cisco.meraki.meraki_network:
       org_name: "{{ meraki_org_name }}"
       net_name: "{{ meraki_net_name }}"
@@ -29,9 +29,7 @@
   # ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠
 
 
-
-
-  - name: Generate vMX Token in Meraki Dashboard
+  - name: Prompt for vMX Token
     ansible.builtin.pause:
       prompt: |
         Generate the vMX Authentication Token :
@@ -45,9 +43,6 @@
   - name: Set meraki_vmx_authentication_token
     ansible.builtin.set_fact:
       meraki_vmx_authentication_token: "{{ token.user_input | trim }}"
-
-  # - name: meraki_vmx_authentication_token
-  #   ansible.builtin.debug: var=meraki_vmx_authentication_token
 
 
 
@@ -82,32 +77,32 @@
   # 💡 Uses the community.aws.ec2_instance module which supports `user_data` 
   # field for inclusion of the Meraki vMX Authentication Token!
   #
-  - name: Create VMX Instance
+  - name: Create vMX Instance
     community.aws.ec2_instance:
       state: present
       vpc_subnet_id: "{{ subnet_public.subnet.id }}"
       region: "{{ aws_region }}"
       image_id: "{{ aws_vmx_ami }}"
       instance_type: "{{ aws_vmx_instance_type }}"
-      key_name: "{{ aws_keypair_name }}"   # SSH Keypair Name
+      key_name: "{{ ssh_keypair_name }}"   # SSH Keypair Name
       security_group: "{{ sg_allowall.group_name }}"
       network:
         assign_public_ip: yes
       user_data: "{{ meraki_vmx_authentication_token | trim }}"
-      wait: yes    # must wait for next tasks
+      wait: yes    # must wait to get eni for NAT and private RT changes
       tags:
         Name: "{{ meraki_vmx_name }}"
         project: "{{ project_name }}"
         start_date: "{{ ansible_date_time.date }}"
     register: vmx
 
-  # - name: Show vmx
-  #   ansible.builtin.debug: var=vmx
+  - name: Show vmx
+    ansible.builtin.debug: var=vmx
 
 
 
   #
-  # Requires the vMX to be initialized; use `wait: yes` above
+  # ⚠ Requires the vMX to be initialized; Use `wait: yes` above
   # ⚠ Works with eni_id but not subnet_id
   #
   - name: Disable Source/Destination Check for vMX as NAT device!
@@ -133,7 +128,7 @@
   # | 192.168.0.0/16  | eni-*  <=== add this
   # | 0.0.0.0/0       | igw-*
   #
-  - name: 💡 Update the Private Route Table with vMX Network
+  - name: Update the AWS Private Route Table with vMX VPN Network
     community.aws.ec2_vpc_route_table:
       vpc_id: "{{ vpc.vpc.id }}"
       subnets:
@@ -142,7 +137,7 @@
         - dest: 0.0.0.0/0
           gateway_id: "{{ igw.gateway_id }}"
         - dest: 192.168.0.0/16
-          instance_id: "{{ vmx.instance_ids[0] }}"
+          instance_id: "{{ vmx.instances[0].instance_id }}"
       tags:
         Name: RT_Private
         project: "{{ project_name }}"
@@ -152,22 +147,8 @@
 
 
 
-  - name: Query Network Hubs
-    cisco.meraki.meraki_site_to_site_vpn:
-      org_name: "{{ meraki_org_name }}"
-      net_name: "{{ meraki_vpn_hub.net_name }}"
-      state: query
-      mode: hub
-    register: lab_hub
-
-  - name: Show lab_hub
-    ansible.builtin.debug: var=lab_hub
-
-
-
-
-  - name: Query Lab Hub Network
-    meraki_network:
+  - name: Find {{ meraki_vpn_hub.net_name }} Network to use as VPN Hub
+    cisco.meraki.meraki_network:
       org_name: "{{ meraki_org_name }}"
       net_name: "{{ meraki_vpn_hub.net_name }}"
       state: query
@@ -179,35 +160,21 @@
 
 
 
-  # - name: Set vMX in Hub mode
-  #   cisco.meraki.meraki_site_to_site_vpn:
-  #     org_name: "{{ meraki_org_name }}"
-  #     net_name: "{{ meraki_net_name }}"
-  #     state: present
-  #     mode: hub
-  #     # subnets:
-  #     # - local_subnet: 172.31.0.0/16
-  #     #   use_vpn: yes
-  #   register: set_spoke
-
-
-
-
   - name: Set vMX in Spoke mode to Lab Hub
     cisco.meraki.meraki_site_to_site_vpn:
       org_name: "{{ meraki_org_name }}"
       net_name: "{{ meraki_net_name }}"
       state: present
-      mode: spoke
+      mode: spoke     # use `spoke` to avoid AWS $$$ for `hub` traffic
       hubs:
       - hub_id: "{{ lab_network.data.id }}"
-        use_default_route: false
+        use_default_route: no   # send all default route traffic to this hub
       #
       # 💡 Add Local Network
       #
-      # subnets:
-      # - local_subnet: 172.31.0.0/16
-      #   use_vpn: yes
+      subnets:
+      - local_subnet: 172.31.0.0/16
+        use_vpn: yes
     register: spoke_mode
 
   - name: spoke_mode
