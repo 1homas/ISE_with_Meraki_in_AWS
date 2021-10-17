@@ -1,0 +1,36 @@
+---
+#
+# Requires 
+# - ssh_keypair_directory (`~/.shh`)
+# - ssh_keypair_name
+#
+
+  - name: Check for existing keypair
+    ansible.builtin.stat:
+      path: "{{ ssh_keypair_directory }}/{{ ssh_keypair_name }}.pem"
+    register: keypair_stat
+
+  # - name: Show keypair_stat
+  #   ansible.builtin.debug: var=keypair_stat
+
+  - name: Create and Save New SSH KeyPair
+    when: not keypair_stat.stat.exists
+    block: 
+    - name: Create EC2 SSH Key Pair
+      amazon.aws.ec2_key:
+        name: "{{ ssh_keypair_name }}"
+        state: present
+      register: key_pair
+
+    - name: Show key_pair
+      ansible.builtin.debug: var=key_pair
+
+    - name: Save Private Key Locally
+      when: key_pair.changed
+      ansible.builtin.copy:
+        content: "{{ key_pair.key.private_key }}"
+        dest: "{{ ssh_keypair_directory }}/{{ ssh_keypair_name }}.pem"
+        mode: '0400'
+
+
+...
