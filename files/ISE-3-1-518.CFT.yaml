@@ -1,0 +1,775 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  AWS Cloud Formation Template for Cisco Identity Service Engine. CFT Version :
+  3.1.518
+Parameters:
+  KeyName:
+    Default: 1homas-AWS-ISE
+    Description: >-
+      To access the Cisco ISE instance via SSH, choose the PEM file that you
+      created in AWS for the username "admin". Create a PEM key pair in AWS now
+      if you have not configured one already. Usage example:  ssh -i
+      mykeypair.pem admin@myhostname.compute-1.amazonaws.com
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    AllowedPattern: .+
+    ConstraintDescription: Instance Key Pair cannot be empty
+  ISEInstanceType:
+    Default: c5.4xlarge
+    Description: Choose the required Cisco ISE instance type.
+    Type: String
+    AllowedValues:
+      - c5.4xlarge
+      - m5.4xlarge
+      - c5.9xlarge
+    ConstraintDescription: Instance type should be one of the allowed values
+  EBSEncrypt:
+    Default: 'false'
+    Description: Choose true to enable EBS encryption.
+    Type: String
+    AllowedValues:
+      - false
+      - true
+    ConstraintDescription: It can either be true or false
+  ERSapi:
+    Default: 'yes'
+    Description: Do you wish to enable ERS?
+    Type: String
+    AllowedValues:
+      - 'yes'
+      - 'no'
+    ConstraintDescription: It can either be yes or no
+  OpenAPI:
+    Default: 'yes'
+    Description: Do you wish to enable OpenAPI?
+    Type: String
+    AllowedValues:
+      - 'yes'
+      - 'no'
+    ConstraintDescription: It can either be yes or no
+  PXGrid:
+    Default: 'no'
+    Description: Do you wish to enable pxGrid?
+    Type: String
+    AllowedValues:
+      - 'yes'
+      - 'no'
+    ConstraintDescription: It can either be yes or no
+  PXGridCloud:
+    Default: 'no'
+    Description: Do you wish to enable pxGrid Cloud?
+    Type: String
+    AllowedValues:
+      - 'yes'
+      - 'no'
+    ConstraintDescription: It can either be yes or no
+  MSecurityGroup:
+    Default: ISE_from_Anywhere
+    Type: 'AWS::EC2::SecurityGroup::Id'
+    Description: >-
+      Choose the Security Group to attach to the Cisco ISE interface. Create a
+      Security Group in AWS now if you have not configured one already.
+    AllowedPattern: .+
+    ConstraintDescription: Security group cannot be empty
+  ManagementSubnetId:
+    Default: subnet-33789069
+    Type: 'AWS::EC2::Subnet::Id'
+    Description: >-
+      Choose the subnet to be used for the Cisco ISE interface. To enable IPv6
+      addresses, you must associate an IPv6 CIDR block with your VPC and
+      subnets. Create a Subnet in AWS now if you have not configured one
+      already.
+    AllowedPattern: .+
+    ConstraintDescription: Subnet cannot be empty
+  Hostname:
+    Default: ise
+    Description: >-
+      Enter the hostname. This field only supports alphanumeric characters and
+      hyphen (-). The length of the hostname should not exceed 19 characters.
+    Type: String
+    AllowedPattern: '^[a-zA-Z0-9-]{1,19}$'
+    ConstraintDescription: >-
+      This field only supports alphanumeric characters and hyphen (-). Hostname
+      should not be more than 19 characters.
+  DNSDomain:
+    Default: aws.local
+    Description: >-
+      Enter a domain name in correct syntax (for example, cisco.com). The valid
+      characters for this field are ASCII characters, numerals, hyphen (-), and
+      period (.). If you use the wrong syntax, Cisco ISE services might not come
+      up on launch.
+    Type: String
+    AllowedPattern: '^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$'
+    ConstraintDescription: >-
+      Cannot be an IP address. Valid characters include ASCII characters, any
+      numerals, the hyphen (-), and the period (.) for DNS domain.
+  NameServer:
+    Default: 208.67.222.222
+    Description: >-
+      Enter the IP address of the name server in correct syntax. If you use the
+      wrong syntax, Cisco ISE services might not come up on launch.
+    Type: String
+    AllowedPattern: '\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}\b'
+    ConstraintDescription: Must be a valid IPv4 address for the primary name server.
+  NTPServer:
+    Default: time.nist.gov
+    Description: >-
+      Enter the IP address or hostname of the NTP server in correct syntax (for
+      example, time.nist.gov). Your entry is not verified on submission. If you
+      use the wrong syntax, Cisco ISE services might not come up on launch.
+    Type: String
+    AllowedPattern: .+
+    ConstraintDescription: NTP server cannot be empty
+  TimeZone:
+    Default: America/Los_Angeles
+    Description: Choose a system time zone.
+    Type: String
+    AllowedValues:
+      - Africa/Abidjan
+      - Africa/Accra
+      - Africa/Algiers
+      - Africa/Bissau
+      - Africa/Cairo
+      - Africa/Casablanca
+      - Africa/Ceuta
+      - Africa/El_Aaiun
+      - Africa/Johannesburg
+      - Africa/Juba
+      - Africa/Khartoum
+      - Africa/Lagos
+      - Africa/Maputo
+      - Africa/Monrovia
+      - Africa/Nairobi
+      - Africa/Ndjamena
+      - Africa/Sao_Tome
+      - Africa/Tripoli
+      - Africa/Tunis
+      - Africa/Windhoek
+      - America/Adak
+      - America/Anchorage
+      - America/Araguaina
+      - America/Argentina/Buenos_Aires
+      - America/Argentina/Catamarca
+      - America/Argentina/Cordoba
+      - America/Argentina/Jujuy
+      - America/Argentina/La_Rioja
+      - America/Argentina/Mendoza
+      - America/Argentina/Rio_Gallegos
+      - America/Argentina/Salta
+      - America/Argentina/San_Juan
+      - America/Argentina/San_Luis
+      - America/Argentina/Tucuman
+      - America/Argentina/Ushuaia
+      - America/Asuncion
+      - America/Atikokan
+      - America/Bahia
+      - America/Bahia_Banderas
+      - America/Barbados
+      - America/Belem
+      - America/Belize
+      - America/Blanc-Sablon
+      - America/Boa_Vista
+      - America/Bogota
+      - America/Boise
+      - America/Cambridge_Bay
+      - America/Campo_Grande
+      - America/Cancun
+      - America/Caracas
+      - America/Cayenne
+      - America/Chicago
+      - America/Chihuahua
+      - America/Costa_Rica
+      - America/Creston
+      - America/Cuiaba
+      - America/Curacao
+      - America/Danmarkshavn
+      - America/Dawson
+      - America/Dawson_Creek
+      - America/Denver
+      - America/Detroit
+      - America/Edmonton
+      - America/Eirunepe
+      - America/El_Salvador
+      - America/Fort_Nelson
+      - America/Fortaleza
+      - America/Glace_Bay
+      - America/Goose_Bay
+      - America/Grand_Turk
+      - America/Guatemala
+      - America/Guayaquil
+      - America/Guyana
+      - America/Halifax
+      - America/Havana
+      - America/Hermosillo
+      - America/Indiana/Indianapolis
+      - America/Indiana/Knox
+      - America/Indiana/Marengo
+      - America/Indiana/Petersburg
+      - America/Indiana/Tell_City
+      - America/Indiana/Vevay
+      - America/Indiana/Vincennes
+      - America/Indiana/Winamac
+      - America/Inuvik
+      - America/Iqaluit
+      - America/Jamaica
+      - America/Juneau
+      - America/Kentucky/Louisville
+      - America/Kentucky/Monticello
+      - America/La_Paz
+      - America/Lima
+      - America/Los_Angeles
+      - America/Maceio
+      - America/Managua
+      - America/Manaus
+      - America/Martinique
+      - America/Matamoros
+      - America/Mazatlan
+      - America/Menominee
+      - America/Merida
+      - America/Metlakatla
+      - America/Mexico_City
+      - America/Miquelon
+      - America/Moncton
+      - America/Monterrey
+      - America/Montevideo
+      - America/Nassau
+      - America/New_York
+      - America/Nipigon
+      - America/Nome
+      - America/Noronha
+      - America/North_Dakota/Beulah
+      - America/North_Dakota/Center
+      - America/North_Dakota/New_Salem
+      - America/Nuuk
+      - America/Ojinaga
+      - America/Panama
+      - America/Pangnirtung
+      - America/Paramaribo
+      - America/Phoenix
+      - America/Port-au-Prince
+      - America/Port_of_Spain
+      - America/Porto_Velho
+      - America/Puerto_Rico
+      - America/Punta_Arenas
+      - America/Rainy_River
+      - America/Rankin_Inlet
+      - America/Recife
+      - America/Regina
+      - America/Resolute
+      - America/Rio_Branco
+      - America/Santarem
+      - America/Santiago
+      - America/Santo_Domingo
+      - America/Sao_Paulo
+      - America/Scoresbysund
+      - America/Sitka
+      - America/St_Johns
+      - America/Swift_Current
+      - America/Tegucigalpa
+      - America/Thule
+      - America/Thunder_Bay
+      - America/Tijuana
+      - America/Toronto
+      - America/Vancouver
+      - America/Whitehorse
+      - America/Winnipeg
+      - America/Yakutat
+      - America/Yellowknife
+      - Antarctica/Casey
+      - Antarctica/Davis
+      - Antarctica/DumontDUrville
+      - Antarctica/Macquarie
+      - Antarctica/Mawson
+      - Antarctica/Palmer
+      - Antarctica/Rothera
+      - Antarctica/Syowa
+      - Antarctica/Troll
+      - Antarctica/Vostok
+      - Asia/Almaty
+      - Asia/Amman
+      - Asia/Anadyr
+      - Asia/Aqtau
+      - Asia/Aqtobe
+      - Asia/Ashgabat
+      - Asia/Atyrau
+      - Asia/Baghdad
+      - Asia/Baku
+      - Asia/Bangkok
+      - Asia/Barnaul
+      - Asia/Beirut
+      - Asia/Bishkek
+      - Asia/Brunei
+      - Asia/Chita
+      - Asia/Choibalsan
+      - Asia/Colombo
+      - Asia/Damascus
+      - Asia/Dhaka
+      - Asia/Dili
+      - Asia/Dubai
+      - Asia/Dushanbe
+      - Asia/Famagusta
+      - Asia/Gaza
+      - Asia/Hebron
+      - Asia/Ho_Chi_Minh
+      - Asia/Hong_Kong
+      - Asia/Hovd
+      - Asia/Irkutsk
+      - Asia/Jakarta
+      - Asia/Jayapura
+      - Asia/Jerusalem
+      - Asia/Kabul
+      - Asia/Kamchatka
+      - Asia/Karachi
+      - Asia/Kathmandu
+      - Asia/Khandyga
+      - Asia/Kolkata
+      - Asia/Krasnoyarsk
+      - Asia/Kuala_Lumpur
+      - Asia/Kuching
+      - Asia/Macau
+      - Asia/Magadan
+      - Asia/Makassar
+      - Asia/Manila
+      - Asia/Nicosia
+      - Asia/Novokuznetsk
+      - Asia/Novosibirsk
+      - Asia/Omsk
+      - Asia/Oral
+      - Asia/Pontianak
+      - Asia/Pyongyang
+      - Asia/Qatar
+      - Asia/Qostanay
+      - Asia/Qyzylorda
+      - Asia/Riyadh
+      - Asia/Sakhalin
+      - Asia/Samarkand
+      - Asia/Seoul
+      - Asia/Shanghai
+      - Asia/Singapore
+      - Asia/Srednekolymsk
+      - Asia/Taipei
+      - Asia/Tashkent
+      - Asia/Tbilisi
+      - Asia/Tehran
+      - Asia/Thimphu
+      - Asia/Tokyo
+      - Asia/Tomsk
+      - Asia/Ulaanbaatar
+      - Asia/Urumqi
+      - Asia/Ust-Nera
+      - Asia/Vladivostok
+      - Asia/Yakutsk
+      - Asia/Yangon
+      - Asia/Yekaterinburg
+      - Asia/Yerevan
+      - Atlantic/Azores
+      - Atlantic/Bermuda
+      - Atlantic/Canary
+      - Atlantic/Cape_Verde
+      - Atlantic/Faroe
+      - Atlantic/Madeira
+      - Atlantic/Reykjavik
+      - Atlantic/South_Georgia
+      - Atlantic/Stanley
+      - Australia/Adelaide
+      - Australia/Brisbane
+      - Australia/Broken_Hill
+      - Australia/Darwin
+      - Australia/Eucla
+      - Australia/Hobart
+      - Australia/Lindeman
+      - Australia/Lord_Howe
+      - Australia/Melbourne
+      - Australia/Perth
+      - Australia/Sydney
+      - CET
+      - CST6CDT
+      - EET
+      - EST
+      - EST5EDT
+      - Etc/GMT
+      - Etc/GMT+1
+      - Etc/GMT+10
+      - Etc/GMT+11
+      - Etc/GMT+12
+      - Etc/GMT+2
+      - Etc/GMT+3
+      - Etc/GMT+4
+      - Etc/GMT+5
+      - Etc/GMT+6
+      - Etc/GMT+7
+      - Etc/GMT+8
+      - Etc/GMT+9
+      - Etc/GMT-1
+      - Etc/GMT-10
+      - Etc/GMT-11
+      - Etc/GMT-12
+      - Etc/GMT-13
+      - Etc/GMT-14
+      - Etc/GMT-2
+      - Etc/GMT-3
+      - Etc/GMT-4
+      - Etc/GMT-5
+      - Etc/GMT-6
+      - Etc/GMT-7
+      - Etc/GMT-8
+      - Etc/GMT-9
+      - Etc/UTC
+      - Europe/Amsterdam
+      - Europe/Andorra
+      - Europe/Astrakhan
+      - Europe/Athens
+      - Europe/Belgrade
+      - Europe/Berlin
+      - Europe/Brussels
+      - Europe/Bucharest
+      - Europe/Budapest
+      - Europe/Chisinau
+      - Europe/Copenhagen
+      - Europe/Dublin
+      - Europe/Gibraltar
+      - Europe/Helsinki
+      - Europe/Istanbul
+      - Europe/Kaliningrad
+      - Europe/Kiev
+      - Europe/Kirov
+      - Europe/Lisbon
+      - Europe/London
+      - Europe/Luxembourg
+      - Europe/Madrid
+      - Europe/Malta
+      - Europe/Minsk
+      - Europe/Monaco
+      - Europe/Moscow
+      - Europe/Oslo
+      - Europe/Paris
+      - Europe/Prague
+      - Europe/Riga
+      - Europe/Rome
+      - Europe/Samara
+      - Europe/Saratov
+      - Europe/Simferopol
+      - Europe/Sofia
+      - Europe/Stockholm
+      - Europe/Tallinn
+      - Europe/Tirane
+      - Europe/Ulyanovsk
+      - Europe/Uzhgorod
+      - Europe/Vienna
+      - Europe/Vilnius
+      - Europe/Volgograd
+      - Europe/Warsaw
+      - Europe/Zaporozhye
+      - Europe/Zurich
+      - HST
+      - Indian/Chagos
+      - Indian/Christmas
+      - Indian/Cocos
+      - Indian/Kerguelen
+      - Indian/Mahe
+      - Indian/Maldives
+      - Indian/Mauritius
+      - Indian/Reunion
+      - MET
+      - MST
+      - MST7MDT
+      - PST8PDT
+      - Pacific/Apia
+      - Pacific/Auckland
+      - Pacific/Bougainville
+      - Pacific/Chatham
+      - Pacific/Chuuk
+      - Pacific/Easter
+      - Pacific/Efate
+      - Pacific/Enderbury
+      - Pacific/Fakaofo
+      - Pacific/Fiji
+      - Pacific/Funafuti
+      - Pacific/Galapagos
+      - Pacific/Gambier
+      - Pacific/Guadalcanal
+      - Pacific/Guam
+      - Pacific/Honolulu
+      - Pacific/Kiritimati
+      - Pacific/Kosrae
+      - Pacific/Kwajalein
+      - Pacific/Majuro
+      - Pacific/Marquesas
+      - Pacific/Nauru
+      - Pacific/Niue
+      - Pacific/Norfolk
+      - Pacific/Noumea
+      - Pacific/Pago_Pago
+      - Pacific/Palau
+      - Pacific/Pitcairn
+      - Pacific/Pohnpei
+      - Pacific/Port_Moresby
+      - Pacific/Rarotonga
+      - Pacific/Tahiti
+      - Pacific/Tarawa
+      - Pacific/Tongatapu
+      - Pacific/Wake
+      - Pacific/Wallis
+      - WET
+  password:
+    Default: C1sco12345
+    Description: >-
+      Enter a password for the username "admin". The password must be aligned
+      with the Cisco ISE password policy. The configured password is used for
+      Cisco ISE GUI access. Warning: The password is displayed in plaintext in
+      the User Data section of the Instance settings window in the AWS Console.
+    NoEcho: 'True'
+    Type: String
+    AllowedPattern: >-
+      ^(?=.*?[A-Z])(?=.*?[a-z])(?i)(?!.*?admin|.*?cisco|.*?nimda|.*?ocsic)(?-i)(?=.*?[0-9]).{6,}$
+    ConstraintDescription: >-
+      Password constraints: One digit is required. One uppercase letter. One
+      lowercase letter. Password should not be the same as username(admin).
+      Should not contain the word cisco. Minimum password length should be 6
+      character.
+  ConfirmPwd:
+    Default: C1sco12345
+    Description: Retype Password
+    NoEcho: 'True'
+    Type: String
+  StorageSize:
+    Default: '300'
+    Description: >-
+      Specify the storage in GB (Minimum 300GB and Maximum 2400GB). 600GB is
+      recommended for production use, storage lesser than 600GB can be used for
+      evaluation purpose only. On terminating the instance, volume will be
+      deleted as well.
+    Type: Number
+    MinValue: '300'
+    MaxValue: '2400'
+    ConstraintDescription: >-
+      Specify the storage in GB (Minimum 300GB and Maximum 2400GB). 600GB is
+      recommended for production use, storage lesser than 600GB can be used for
+      evaluation purpose only. On terminating the instance, volume will be
+      deleted as well.
+  ManagementPrivateIpAddress:
+    Type: String
+    Description: >-
+      (Optional) Enter the IPv4 address from the subnet that you chose earlier.
+      If this field is left blank, the AWS DHCP will assign an IP address.
+    ConstraintDescription: must be a valid IP address of the form x.x.x.x.
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Instance Details
+        Parameters:
+          - Hostname
+          - KeyName
+          - MSecurityGroup
+          - ManagementSubnetId
+          - ManagementPrivateIpAddress
+          - TimeZone
+          - ISEInstanceType
+          - EBSEncrypt
+          - StorageSize
+      - Label:
+          default: Network Configuration
+        Parameters:
+          - DNSDomain
+          - NameServer
+          - NTPServer
+      - Label:
+          default: Services
+        Parameters:
+          - ERSapi
+          - OpenAPI
+          - PXGrid
+          - PXGridCloud
+      - Label:
+          default: User Details
+        Parameters:
+          - password
+          - ConfirmPwd
+    ParameterLabels:
+      ERSapi:
+        default: ERS
+      OpenAPI:
+        default: OpenAPI
+      PXGrid:
+        default: pxGrid
+      PXGridCloud:
+        default: pxGrid Cloud
+      DNSDomain:
+        default: DNS Domain
+      NameServer:
+        default: Name Server
+      NTPServer:
+        default: NTP Server
+      password:
+        default: Enter Password
+      ConfirmPwd:
+        default: Confirm Password
+      MSecurityGroup:
+        default: Management Security Group
+      ManagementPrivateIpAddress:
+        default: Management Private IP
+      ManagementSubnetId:
+        default: Management Network
+      KeyName:
+        default: Instance Key Pair
+      TimeZone:
+        default: Time Zone
+      ISEInstanceType:
+        default: Instance Type
+      StorageSize:
+        default: Volume Size
+      EBSEncrypt:
+        default: EBS Encryption
+  'AWS::CloudFormation::Designer':
+    ad677dc1-dda5-4cd8-a80e-5563937922c4:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 60
+        'y': 90
+      z: 1
+      embeds: []
+Conditions:
+  HasPrivateIp: !Not 
+    - !Equals 
+      - ''
+      - !Ref ManagementPrivateIpAddress
+Resources:
+  IseEc2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref ISEInstanceType
+      NetworkInterfaces:
+        - DeviceIndex: '0'
+          PrivateIpAddress: !If 
+            - HasPrivateIp
+            - !Ref ManagementPrivateIpAddress
+            - !Ref 'AWS::NoValue'
+          SubnetId: !Ref ManagementSubnetId
+          GroupSet:
+            - !Ref MSecurityGroup
+      Tags:
+        - Key: Role
+          Value: Test Instance
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap 
+        - CiscoISE31AMI
+        - !Ref 'AWS::Region'
+        - BYOL
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeType: gp2
+            DeleteOnTermination: 'true'
+            Encrypted: !Ref EBSEncrypt
+            VolumeSize: !Ref StorageSize
+      UserData: !Base64 
+        'Fn::Join':
+          - ''
+          - - hostname=
+            - !Ref Hostname
+            - |+
+
+            - dnsdomain=
+            - !Ref DNSDomain
+            - |+
+
+            - primarynameserver=
+            - !Ref NameServer
+            - |+
+
+            - ntpserver=
+            - !Ref NTPServer
+            - |+
+
+            - username=admin
+            - |+
+
+            - password=
+            - !Ref password
+            - |+
+
+            - timezone=
+            - !Ref TimeZone
+            - |+
+
+            - ersapi=
+            - !Ref ERSapi
+            - |+
+
+            - openapi=
+            - !Ref OpenAPI
+            - |+
+
+            - pxGrid=
+            - !Ref PXGrid
+            - |+
+
+            - pxgrid_cloud=
+            - !Ref PXGridCloud
+            - |+
+
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: ad677dc1-dda5-4cd8-a80e-5563937922c4
+Outputs:
+  InstanceID:
+    Description: 'InstanceID of the newly created ISE EC2 instance '
+    Value: !Ref IseEc2Instance
+  AZ:
+    Description: Availability Zone of the newly created EC2 instance
+    Value: !GetAtt 
+      - IseEc2Instance
+      - AvailabilityZone
+  PrivateDnsName:
+    Description: Private DNSName of the newly created EC2 instance
+    Value: !GetAtt 
+      - IseEc2Instance
+      - PrivateDnsName
+  PrivateIp:
+    Description: Private IP address of the newly created EC2 instance
+    Value: !GetAtt 
+      - IseEc2Instance
+      - PrivateIp
+Mappings:
+  CiscoISE31AMI:
+    us-east-1:
+      BYOL: ami-0cbed48cc9df4f880
+    us-east-2:
+      BYOL: ami-0890340336c48c89f
+    us-west-1:
+      BYOL: ami-00a1a68f5519aa150
+    us-west-2:
+      BYOL: ami-0ef2cc6c45ca5fc1f
+    ca-central-1:
+      BYOL: ami-04681986db6c36e2e
+    eu-central-1:
+      BYOL: ami-0a9555cddbcb11fe1
+    eu-west-1:
+      BYOL: ami-0e23f00231cbe8685
+    eu-west-2:
+      BYOL: ami-03764f7408e02964a
+    eu-west-3:
+      BYOL: ami-080aa4921de0e82ab
+    eu-north-1:
+      BYOL: ami-0ffc58893472137cd
+    ap-southeast-1:
+      BYOL: ami-01229aabec61a0653
+    ap-southeast-2:
+      BYOL: ami-0ded88aa03eeb6b9d
+    ap-south-1:
+      BYOL: ami-03ab7eac5525bd00d
+    ap-northeast-1:
+      BYOL: ami-020bdb75aa5e1c4fc
+    ap-northeast-2:
+      BYOL: ami-0fd83de5878dcc27e
+    sa-east-1:
+      BYOL: ami-0b40700455de971a2
+Rules:
+  PasswdMismatch:
+    Assertions:
+      - Assert: !Equals 
+          - !Ref password
+          - !Ref ConfirmPwd
+        AssertDescription: Password mismatch
