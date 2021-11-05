@@ -78,10 +78,9 @@
         cidr_ip: 192.168.0.0/16
         rule_desc: Ping
       rules_egress:
-      - ip_protocol: '-1'
-        ip_ranges:
-        - cidr_ip: 0.0.0.0/0    # any
-        rule_desc: Allow All
+        - proto: all
+          cidr_ip: 0.0.0.0/0    # any
+          rule_desc: Allow All
       tags:
         Name: SG-ISE
         project: "{{ project_name }}"
