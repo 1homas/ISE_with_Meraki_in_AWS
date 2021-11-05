@@ -64,9 +64,11 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
     ```
 
     ```bash
-    # Keep *.env files in a .env folder in your home directory
-    # Use source to load environment variables from *.env files
-    source ~/.env/*.env
+    # Alternatively, keep *.env files in a .env folder in your home directory
+    # Use `source` to load environment variables from the *****.env files
+    source ~/.env/aws.env
+    source ~/.env/ise.env
+    source ~/.env/meraki.env
     ```
 
 4. Edit the `vars/main.yaml` and change the `meraki_org_name` to yours. You will want to review the other settings and change them to match your environment:
