@@ -58,6 +58,11 @@
         cidr_ip: 192.168.0.0/16
         rule_desc: RADIUS Acct
       - proto: tcp
+        from_port: 8905
+        to_port: 8905
+        cidr_ip: 192.168.0.0/16
+        rule_desc: Posture
+      - proto: tcp
         from_port: 8910
         to_port: 8910
         cidr_ip: 192.168.0.0/16
