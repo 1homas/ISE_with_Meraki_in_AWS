@@ -48,6 +48,8 @@
       security_group: "{{ sg_ping_ssh.group_name }}"
       network:
         assign_public_ip: yes
+      volumes:
+        delete_on_termination: yes
       wait: yes
       tags:
         Name: Ping
