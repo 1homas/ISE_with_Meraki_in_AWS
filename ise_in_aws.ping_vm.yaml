@@ -48,8 +48,10 @@
       security_group: "{{ sg_ping_ssh.group_name }}"
       network:
         assign_public_ip: yes
-      volumes:
-        delete_on_termination: yes
+      # volumes:
+      #   - device_name: /dev/xvda
+      #     delete_on_termination: true
+      #     volume_size: 10
       wait: yes
       tags:
         Name: Ping
