@@ -88,6 +88,10 @@
       security_group: "{{ sg_allowall.group_name }}"
       network:
         assign_public_ip: yes
+      # volumes:
+      #   - device_name: /dev/xvda
+      #     delete_on_termination: true
+      #     volume_size: 10
       user_data: "{{ meraki_vmx_authentication_token | trim }}"
       wait: yes    # must wait to get eni for NAT and private RT changes
       tags:
