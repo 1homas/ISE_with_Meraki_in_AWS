@@ -107,7 +107,9 @@
       group: "{{ sg_ise.group_name }}"
       key_name: "{{ ssh_keypair_name }}"
       volumes:
-        delete_on_termination: yes
+        - device_name: /dev/sda1
+          delete_on_termination: true
+          volume_size: 300
       wait: yes
       count: 1
       assign_public_ip: yes
