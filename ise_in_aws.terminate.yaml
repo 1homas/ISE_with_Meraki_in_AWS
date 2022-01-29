@@ -173,6 +173,17 @@
 
 
 
+  #
+  # Delete the keypair from AWS!
+  #
+  - name: Delete {{ ssh_keypair_name }} by Name
+    amazon.aws.ec2_key:
+      name: "{{ ssh_keypair_name }}"
+      state: absent
+
+  #
+  # Delete the local keypair
+  #
   - name: Delete {{ ssh_keypair_directory }}/{{ ssh_keypair_name }}.pem
     ansible.builtin.file:
       path: "{{ ssh_keypair_directory }}/{{ ssh_keypair_name }}.pem"
