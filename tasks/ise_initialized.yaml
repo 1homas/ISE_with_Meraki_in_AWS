@@ -3,29 +3,7 @@
 # Test for ISE Application Server Initialization
 #
 
-  - name: Query for ISE instances in project "'{{ project_name }}'"
-    community.aws.ec2_instance_info:    # get all by default
-      filters:
-        instance-state-name: [ 'running' ]
-        "tag:project": "{{ project_name }}"
-        "tag:Name": "ISE"
-    register: instances
-
-  # - name: Show instances
-  #   ansible.builtin.debug: var=instances
-
-  - name: Show Instances
-    loop: "{{ instances.instances }}"
-    ansible.builtin.debug: 
-      msg:
-      - "{{ item.instance_id }} | {{ item.private_ip_address }}"
-
-  - name: Set ise_hostname
-    ansible.builtin.set_fact:
-      ise_hostname: "{{ instances.instances[0].private_ip_address }}"
-
-
-  - name: Ping {{ ise_hostname }}
+  - name: Ping {{ item.private_ip }}
     ansible.builtin.ping:
     register: result
     until: result.failed == false
@@ -33,9 +11,9 @@
     delay: 5
 
 
-  - name: Wait for ISE App Server (GUI) @ {{ inventory_hostname }}
+  - name: Wait for {{ item.private_ip }} App Server (GUI)
     ansible.builtin.uri:
-      url: https://{{ ise_hostname }}/admin/login.jsp
+      url: https://{{ item.private_ip }}/admin/login.jsp
       method: GET
       follow_redirects: safe
       timeout: 10
@@ -46,10 +24,10 @@
     retries: 1000
     delay: 10
 
-  - name: ISE Initialized
+  - name: Show {{ item.private_ip }} Initialized
     when: result.status == 200
     ansible.builtin.debug: 
-      msg : "✅ ISE Application Server Initialized"
+      msg : "✅ ISE Application Server {{ item.private_ip }} Initialized"
 
 
 ...
