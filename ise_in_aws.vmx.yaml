@@ -61,7 +61,7 @@
         instance-state-name: [ 'running' ]
         "tag:project": "{{ project_name }}"
         "tag:Name": "{{ vmx_name }}"
-        # "tag:product": "vMX"
+        "tag:product": "vMX"
     register: vmx
  .debug: var=vmx
 
