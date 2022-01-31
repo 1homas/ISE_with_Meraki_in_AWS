@@ -40,6 +40,7 @@
   - name: Create Ping_VM
     community.aws.ec2_instance:
       state: present
+      name: "{{ pingvm_name }}"
       region: "{{ aws_region }}"
       vpc_subnet_id: "{{ subnet_private.subnet.id }}"
       image_id: "{{ aws_linux_ami }}"
@@ -48,13 +49,16 @@
       security_group: "{{ sg_ping_ssh.group_name }}"
       network:
         assign_public_ip: yes
-      # volumes:
-      #   - device_name: /dev/xvda
-      #     delete_on_termination: true
-      #     volume_size: 10
+        delete_on_termination: yes
+        private_ip_address: "{{ pingvm_private_ip }}"
+      volumes:
+        - device_name: /dev/xvda
+          ebs:
+            delete_on_termination: true
+            volume_size: 10
       wait: yes
       tags:
-        Name: Ping
+        Name: "{{ pingvm_name }}"
         project: "{{ project_name }}"
         start_date: "{{ ansible_date_time.date }}"
     register: ping_vm
@@ -67,6 +71,36 @@
       msg: 
       - "ping {{ ping_vm.instances[0].private_ip_address }}"
       - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }}.pem ec2-user@{{ ping_vm.instances[0].private_ip_address }}"
+
+
+
+
+  #
+  # Advertise the same internal IP for public and private DNS
+  #
+  - name: Add public DNS entry for the PingVM
+    community.aws.route53:
+      state: present
+      zone: "{{ domain_name }}"
+      record: "ping.{{ domain_name }}"
+      overwrite: yes
+      private_zone: no
+      type: A
+      ttl: 7200
+      value: "{{ pingvm_private_ip }}"
+      wait: no
+
+  - name: Add private DNS entry for the PingVM
+    community.aws.route53:
+      state: present
+      zone: "{{ domain_name }}"
+      record: "ping.{{ domain_name }}"
+      overwrite: yes
+      private_zone: yes
+      type: A
+      ttl: 7200
+      value: "{{ pingvm_private_ip }}"
+      wait: no
 
 
 ...
