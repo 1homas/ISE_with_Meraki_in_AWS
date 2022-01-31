@@ -2,9 +2,9 @@
 
 project_name: ISEinAWS        # use for tagging VMs and resources
 provider: AWS                 # infrastructure provider for environment options
+domain_name: iseisebaby.net
 
 meraki_org_name: thomas       # your Meraki Organization
-meraki_vmx_name: vMX          # Name in AWS
 meraki_net_name: "{{ project_name }}"   # Name in Meraki Dashboard
 meraki_vpn_hub:               # Meraki VPN hub to connect vMX into
   net_name: Lab               #   Network name in Dashboard
@@ -30,26 +30,58 @@ ssh_keypair_name: "{{ project_name }}"
 aws_linux_ami: ami-04b6c97b14c54de18    # us-west-1 Amazon Linux 2 AMI (HVM)
 aws_linux_instance_type: t2.micro
 
+pingvm_name: ping
+pingvm_private_ip: 172.31.2.111
+pingvm_public_dns_name:  "ping_public.{{ domain_name }}"
+pingvm_private_dns_name: "ping.{{ domain_name }}"
+pingvm_dns_alias: "ping.{{ domain_name }}"
+
 #
 # vMX AMI
 #
-aws_vmx_ami: ami-09db17cd0ae68ce37      # us-west-1
-aws_vmx_instance_type: c5.xlarge        # c5.large | c5.xlarge
+vmx_aws_ami: ami-09db17cd0ae68ce37      # us-west-1
+vmx_aws_instance_type: c5.xlarge        # c5.large | c5.xlarge
+vmx_name: vMX                           # Name in AWS
+vmx_private_ip: 172.31.1.5              # AWS reserves the first 2 IPs
+vmx_public_dns_name:  "vmx-1_public.{{ domain_name }}"
+vmx_private_dns_name: "vmx-1.{{ domain_name }}"
+vmx_dns_alias: "vmx.{{ domain_name }}"
+
 
 #
 # Cisco ISE VM
 #
-aws_ise_ami: ami-00a1a68f5519aa150
-aws_ise_instance_type: c5.4xlarge
+# See https://cs.co/ise-aws for AMIs and Instance Types
+#
+aws_ise_ami: ami-0965fef2e601ad4d0  # us-west-1 ISE 3.1 Patch 1 20211209
+aws_ise_instance_type: t3.xlarge    # ISE Eval/Demo size
 
 ise_base_hostname: ise
 ise_username: admin
 ise_password: "C1sco12345"
+ise_rest_username: "{{ ise_username }}"
+ise_rest_password: "{{ ise_password }}"
 ise_verify: false
 ise_ntp_server: time.nist.gov
 ise_dns_server: 208.67.222.222
-ise_domain: aws.local
 ise_timezone: America/Los_Angeles
+
+ise_nodes:
+  - name: ise
+    instance_type: t3.xlarge
+    public_dns_name:  "ise.{{ domain_name }}"
+    private_dns_name: "ise.{{ domain_name }}"
+    dns_alias: "ise.{{ domain_name }}"
+    private_ip: 172.31.2.11
+    role: Primary
+    personas: [ "Standalone" ]  # [ "Standalone", "PAN", "MNT", "PSN", "PXG" ]
+  # - name: ise-span
+  #   public_dns_name:  "ise-span.{{ domain_name }}"
+  #   private_dns_name: "ise-span.{{ domain_name }}"
+  #   dns_alias: "ise-span.{{ domain_name }}"
+  #   private_ip: 172.31.2.12
+  #   role: Secondary
+  #   personas: [ "PAN", "MNT", "PSN" ]
 
 radius_secret: C1sco12345
 snmp_secret: C1sco12345
