@@ -6,7 +6,7 @@
   - name: Enable ISE OpenAPIs (ISE 3.1+)
     delegate_to: localhost
     ansible.builtin.uri:
-      url: "https://{{ inventory_hostname }}/admin/API/apiService/update"
+      url: "https://{{ item.private_ip }}/admin/API/apiService/update"
       method: POST
       url_username: "{{ ise_username }}"
       url_password: "{{ ise_password }}"
@@ -37,7 +37,7 @@
   - name: Get ISE ERS APIs Status
     delegate_to: localhost
     ansible.builtin.uri:
-      url: "https://{{ inventory_hostname }}/admin/API/NetworkAccessConfig/ERS"
+      url: "https://{{ item.private_ip }}/admin/API/NetworkAccessConfig/ERS"
       method: GET
       url_username: "{{ ise_username }}"
       url_password: "{{ ise_password }}"
@@ -59,7 +59,7 @@
   - name: Enable ISE ERS APIs
     delegate_to: localhost
     ansible.builtin.uri:
-      url: "https://{{ inventory_hostname }}/admin/API/NetworkAccessConfig/ERS"
+      url: "https://{{ item.private_ip }}/admin/API/NetworkAccessConfig/ERS"
       method: PUT
       url_username: "{{ ise_username }}"
       url_password: "{{ ise_password }}"
