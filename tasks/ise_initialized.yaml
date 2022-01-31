@@ -3,7 +3,7 @@
 # Test for ISE Application Server Initialization
 #
 
-  - name: Ping {{ item.private_ip }}
+  - name: Ping {{ pingvm_private_ip }}
     ansible.builtin.ping:
     register: result
     until: result.failed == false
