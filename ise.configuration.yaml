@@ -15,7 +15,7 @@
       filters:
         instance-state-name: [ 'running' ]
         "tag:project": "{{ project_name }}"
-        "tag:Name": "ISE"
+        "tag:product": "ISE"
     register: instances
 
   - name: Show instances
@@ -27,19 +27,18 @@
       msg:
       - "{{ item.instance_id }} | {{ item.private_ip_address }}"
 
-  - name: Set inventory_hostname
-    ansible.builtin.set_fact:
-      inventory_hostname: "{{ instances.instances[0].private_ip_address }}"
 
   #----------------------------------------------------------------------------
   # Verify ISE is up and APIs are enabled
   #----------------------------------------------------------------------------
   # ⟁ Wait for ISE Application Server to be available after [re]boot
   - name: Test for ISE Application Server Initialization
+    loop: "{{ ise_nodes }}"
     ansible.builtin.include_tasks: tasks/ise_initialized.yaml
 
   # ⟁ Verify APIs are enabled *before* gathering facts and configuring
   - name: Enable ISE ERS & OpenAPIs
+    loop: "{{ ise_nodes }}"
     ansible.builtin.include_tasks: tasks/ise_apis_enabled.yaml
 
   - name: Set Facts for ISE (Version & Patch)
