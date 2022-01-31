@@ -34,6 +34,7 @@
 
 
   - name: Wait for ISE to be Initialized
+    loop: "{{ ise_nodes }}"
     ansible.builtin.include_tasks: tasks/ise_initialized.yaml
 
 
