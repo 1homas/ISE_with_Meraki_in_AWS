@@ -1,7 +1,7 @@
 ---
 #
 # Requires 
-# - ssh_keypair_directory (`~/.shh`)
+# - ssh_keypair_directory (`~/.ssh`)
 # - ssh_keypair_name
 #
 
