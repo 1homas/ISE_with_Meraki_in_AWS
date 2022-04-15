@@ -117,9 +117,9 @@
     ansible.builtin.debug:
       msg: 
       - "ping {{ item.private_ip }}"
-      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }}.pem {{ ise_username }}@{{ item.private_ip }}"
+      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }}.private.pem {{ ise_username }}@{{ item.private_ip }}"
       - "ping {{ item.name }}.{{ domain_name }}"
-      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }}.pem {{ ise_username }}@{{ item.name }}.{{ domain_name }}"
+      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }}.private.pem {{ ise_username }}@{{ item.name }}.{{ domain_name }}"
 
 
 ...
