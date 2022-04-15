@@ -1,7 +1,7 @@
 ---
 #
-# Terminate AWS EC2 Instances for a Project
-#   - Terminate all EC2 instances in Project
+# Terminate AWS EC2 Instances for a tagged project:
+#   - Terminate all EC2 instances
 #   - Delete Subnets
 #   - Delete Route Table
 #   - Delete Internet Gateway
@@ -9,12 +9,13 @@
 #   - Delete VPCs
 #   - Delete public_key
 #   - Delete private_key.pem
-#
+#   - TODO: Delete Route53 records
+#   - TODO: Delete S3 Buckets
 # Run: `ansible-playbook ise_in_aws.terminate.yaml`
 #
 
 
-- name: Terminate AWS EC2 Instances for Project "{{ project_name }}"
+- name: Terminate AWS EC2 Instances for project:"{{ project_name }}"
   hosts: localhost
   vars_files: 
     - vars/main.yaml
@@ -83,6 +84,29 @@
     amazon.aws.ec2_eni:
       state: absent
       eni_id: "{{ item.id }}"
+
+
+
+
+  # - name: Retrieve the DNS details
+  #   community.aws.route53:
+  #     state: get
+  #     zone: "{{ domain_name }}"
+  #     record: "{{ domain_name }}"
+  #     type: A
+  #   register: rec
+
+  # - name: Show rec
+  #   ansible.builtin.debug: var=rec
+
+  # - name: Delete A records using the results from the get command
+  #   community.aws.route53:
+  #     state: absent
+  #     zone: "{{ domain_name }}"
+  #     record: "{{ rec.set.record }}"
+  #     ttl: "{{ rec.set.ttl }}"
+  #     type: "{{ rec.set.type }}"
+  #     value: "{{ rec.set.value }}"
 
 
 
@@ -184,9 +208,9 @@
   #
   # Delete the local keypair
   #
-  - name: Delete {{ ssh_keypair_directory }}/{{ ssh_keypair_name }}.pem
+  - name: Delete {{ ssh_keypair_directory }}/{{ ssh_keypair_name }}.private.pem
     ansible.builtin.file:
-      path: "{{ ssh_keypair_directory }}/{{ ssh_keypair_name }}.pem"
+      path: "{{ ssh_keypair_directory }}/{{ ssh_keypair_name }}.private.pem"
       state: absent
 
 
