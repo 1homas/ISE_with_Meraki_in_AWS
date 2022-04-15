@@ -2,10 +2,10 @@
 
 project_name: ISE_Meraki_AWS  # use for tagging VMs and resources
 provider: AWS                 # infrastructure provider for environment options
-domain_name: iseisebaby.net
+domain_name: iseisebaby.net   # your domain for DNS, if any
 
 meraki_org_name: thomas       # your Meraki Organization
-meraki_net_name: "{{ project_name }}"   # Name in Meraki Dashboard
+meraki_net_name: "{{ project_name }}"   # Meraki vMX network name
 meraki_vpn_hub:               # Meraki VPN hub to connect vMX into
   net_name: Lab               #   Network name in Dashboard
   net_cidr: 192.168.101.0/24  #   VPN Hub Network CIDR
@@ -63,7 +63,7 @@ ise_rest_username: "{{ ise_username }}"
 ise_rest_password: "{{ ise_password }}"
 ise_verify: false
 ise_ntp_server: time.nist.gov
-ise_dns_server: 208.67.222.222
+ise_dns_server: 208.67.222.222      # Cisco Umbrella
 ise_timezone: America/Los_Angeles
 
 ise_nodes:
