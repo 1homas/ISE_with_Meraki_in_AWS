@@ -72,6 +72,7 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
     ```
 
 4. Edit the `vars/main.yaml` and change the `meraki_org_name` to yours. You will want to review the other settings and change them to match your environment:
+    - your desired project name
     - AMI identifiers for your AWS region if not `us-west-1`
     - your desired network CIDR ranges
     - your desired instance types
@@ -97,7 +98,7 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
     ansible-playbook ise.configuration.yaml
     ```
 
-8. When you are finished playing with it, you may terminate the instances:
+8. When you are done, terminate the instances and delete all resources to prevent surprise AWS bills:
 
     ```bash
     ansible-playbook ise_in_aws.terminate.yaml
