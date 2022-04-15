@@ -62,12 +62,12 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
     export ise_password='C1sco12345'
     export ise_verify=false
     ```
-    Alternatively, keep *.env files in a .env folder in your home directory and use `source {filename}` to load environment variables from the *****.env files:
+    Alternatively, keep your environment variables in files in a `.env` or similar folder in your home directory and use `source {filename}` to load environment variables from the files:
 
     ```bash
-    source ~/.env/aws.env
-    source ~/.env/ise.env
-    source ~/.env/meraki.env
+    source ~/.env/aws.sh
+    source ~/.env/ise.sh
+    source ~/.env/meraki.sh
     ```
 
 4. Edit the `vars/main.yaml` and change the `meraki_org_name` to yours. You will want to review the other settings and change them to match your environment:
