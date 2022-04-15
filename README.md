@@ -62,10 +62,9 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
     export ise_password='C1sco12345'
     export ise_verify=false
     ```
+    Alternatively, keep *.env files in a .env folder in your home directory and use `source {filename}` to load environment variables from the *****.env files:
 
     ```bash
-    # Alternatively, keep *.env files in a .env folder in your home directory
-    # Use `source` to load environment variables from the *****.env files
     source ~/.env/aws.env
     source ~/.env/ise.env
     source ~/.env/meraki.env
