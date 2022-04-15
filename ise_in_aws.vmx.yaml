@@ -3,7 +3,7 @@
 
   #
   # The default LAN Setting for a new network will be :
-  # 
+  #
   # | Name                | Subnet            | MX IP
   # |---------------------|-------------------|--------------
   # | Single LAN Settings | 192.168.128.0/24  | 192.168.128.1
@@ -63,7 +63,9 @@
         "tag:Name": "{{ vmx_name }}"
         "tag:product": "vMX"
     register: vmx
- .debug: var=vmx
+
+  - name: Show vmx
+    ansible.builtin.debug: var=vmx
 
 
 
@@ -81,7 +83,7 @@
           Generate the vMX Authentication Token :
           - In the Meraki Dashboard, select the network '{{ meraki_org_name }}:{{ meraki_net_name }}'
           - Add a vMX device if needed
-          - Navigate to Security & SDWAN > Monitor > Appliance Status 
+          - Navigate to Security & SDWAN > Monitor > Appliance Status
           - Scroll down and select Generate authentication token...
           - Paste the token here and press <Enter>
       register: token
@@ -91,7 +93,7 @@
         meraki_vmx_authentication_token: "{{ token.user_input | trim }}"
 
     #
-    # 💡 Uses the community.aws.ec2_instance module which supports `user_data` 
+    # 💡 Uses the community.aws.ec2_instance module which supports `user_data`
     # field for inclusion of the Meraki vMX Authentication Token!
     #
     - name: Create vMX Instance
@@ -159,9 +161,6 @@
 
 
 
-  #
-  # Advertise the same internal IP for public and private DNS
-  #
   - name: Add public DNS entry for the vMX
     community.aws.route53:
       state: present
@@ -171,7 +170,7 @@
       private_zone: no
       type: A
       ttl: 7200
-      value: "{{ vmx.instances[0].private_ip_address }}"
+      value: "{{ vmx.instances[0].public_ip_address }}"
       wait: no
 
   - name: Add private DNS entry for the vMX
@@ -240,14 +239,14 @@
       - hub_id: "{{ lab_network.data.id }}"
         use_default_route: false  # send all default route traffic to this hub
       # 🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞
-      # 
+      #
       # subnets:
       # - local_subnet: 172.31.0.0/16
       #   use_vpn: true
       #
       # Error - Status: 400
       # Unrecognized subnet 172.31.0.0/16 for Passthrough MX - only Client VPN subnet(s) permitted
-      # 
+      #
       # Cannot Add Local Network via API! 8-(
       # Must do it manually in Dashboard:
       #   Security & SDWAN > Configure > Site-to-Site VPN > Local Networks
