@@ -17,7 +17,7 @@
 
 - name: Terminate AWS EC2 Instances for project:"{{ project_name }}"
   hosts: localhost
-  vars_files: 
+  vars_files:
     - vars/main.yaml
   vars_prompt:
     - name: project_name
@@ -219,8 +219,8 @@
   - name: Delete the Meraki Network
     cisco.meraki.meraki_network:
       org_name: "{{ meraki_org_name }}"
-      net_name: "{{ project_name }}"
+      net_name: "{{ meraki_net_name }}"
       state: absent
- 
+
 
 ...
