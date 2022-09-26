@@ -8,8 +8,8 @@
     ansible.builtin.uri:
       url: "https://{{ item.private_ip }}/admin/API/apiService/update"
       method: POST
-      url_username: "{{ ise_rest_username }}"
-      url_password: "{{ ise_rest_password }}"
+      url_username: "{{ ise_username }}"
+      url_password: "{{ ise_password }}"
       force_basic_auth: yes
       body: '{ "papIsEnabled":true, "psnsIsEnabled":true }'
       status_code: 200,500
@@ -24,23 +24,23 @@
 
   - name: Show ISE OpenAPIs Enabled Status
     when: (response.status == 200) or (response.status == 500 and response.content.find('already enabled') != -1)
-    ansible.builtin.debug: 
+    ansible.builtin.debug:
       msg : "✅ {{ item.private_dns_name }} OpenAPIs Enabled"
 
 
   - name: Show ISE OpenAPIs Disabled Status
     when: (response.status != 200) and (response.status != 500)
-    ansible.builtin.debug: 
+    ansible.builtin.debug:
       msg : "❌ {{ item.private_dns_name }} OpenAPIs Disabled"
-  
+
 
   - name: Get ISE ERS APIs Status
     delegate_to: localhost
     ansible.builtin.uri:
       url: "https://{{ item.private_ip }}/admin/API/NetworkAccessConfig/ERS"
       method: GET
-      url_username: "{{ ise_rest_username }}"
-      url_password: "{{ ise_rest_password }}"
+      url_username: "{{ ise_username }}"
+      url_password: "{{ ise_password }}"
       force_basic_auth: yes
       headers:
         Accept: application/xml
@@ -52,7 +52,7 @@
 
   - name: ISE ERS APIs Status
     when: response.status == 200
-    ansible.builtin.debug: 
+    ansible.builtin.debug:
       msg : "✅ {{ item.private_dns_name }} OpenAPIs Enabled"
 
 
@@ -61,8 +61,8 @@
     ansible.builtin.uri:
       url: "https://{{ item.private_ip }}/admin/API/NetworkAccessConfig/ERS"
       method: PUT
-      url_username: "{{ ise_rest_username }}"
-      url_password: "{{ ise_rest_password }}"
+      url_username: "{{ ise_username }}"
+      url_password: "{{ ise_password }}"
       force_basic_auth: yes
       headers:
         Accept: application/xml
@@ -77,13 +77,13 @@
 
   - name: Show {{ item.private_dns_name }} ERS Enabled Status
     when: response.status == 200
-    ansible.builtin.debug: 
+    ansible.builtin.debug:
       msg : "✅ {{ item.private_dns_name }} ERS APIs Enabled"
 
 
   - name: Show {{ item.private_dns_name }} ERS Disabled Status
     when: response.status != 200
-    ansible.builtin.debug: 
+    ansible.builtin.debug:
       msg : "❌ {{ item.private_dns_name }} ERS APIs Disabled"
 
 
