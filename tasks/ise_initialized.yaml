@@ -4,6 +4,7 @@
 #
 
   - name: Ping {{ pingvm_private_ip }}
+    delegate_to: localhost
     ansible.builtin.ping:
     register: result
     until: result.failed == false
@@ -12,6 +13,7 @@
 
 
   - name: Wait for {{ item.private_ip }} App Server (GUI)
+    delegate_to: localhost
     ansible.builtin.uri:
       url: https://{{ item.private_ip }}/admin/login.jsp
       method: GET
@@ -26,7 +28,7 @@
 
   - name: Show {{ item.private_ip }} Initialized
     when: result.status == 200
-    ansible.builtin.debug: 
+    ansible.builtin.debug:
       msg : "✅ ISE Application Server {{ item.private_ip }} Initialized"
 
 
