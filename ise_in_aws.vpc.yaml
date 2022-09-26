@@ -17,7 +17,7 @@
       tags:
         Name: "vpc_{{ project_name }}"
         project: "{{ project_name }}"
-        start_date: "{{ ansible_date_time.date }}"
+        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
     register: vpc
 
   # - name: Show vpc
@@ -33,7 +33,7 @@
       tags:
         Name: "igw_{{ project_name }}"
         project: "{{ project_name }}"
-        start_date: "{{ ansible_date_time.date }}"
+        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
     register: igw
 
   # - name: Show igw
@@ -52,7 +52,7 @@
       tags:
         Name: Public_Subnet
         project: "{{ project_name }}"
-        start_date: "{{ ansible_date_time.date }}"
+        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
     register: subnet_public
 
   # - name: Show subnet_public
@@ -70,7 +70,7 @@
       tags:
         Name: Private_Subnet
         project: "{{ project_name }}"
-        start_date: "{{ ansible_date_time.date }}"
+        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
     register: subnet_private
 
   # - name: Show subnet_private
@@ -91,7 +91,7 @@
       tags:
         Name: RT_Public
         project: "{{ project_name }}"
-        start_date: "{{ ansible_date_time.date }}"
+        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
     register: rt_public
 
   # - name: Show rt_public
@@ -110,11 +110,11 @@
           gateway_id: "{{ igw.gateway_id }}"
         # 💡 Update this with other VPN networks after vMX creation! 💡
         # - dest: 192.168.0.0/16
-        #   instance_id: "{{ vmx.instance_id }}"          
+        #   instance_id: "{{ vmx.instance_id }}"
       tags:
         Name: RT_Private
         project: "{{ project_name }}"
-        start_date: "{{ ansible_date_time.date }}"
+        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
     register: rt_private
 
   # - name: Show rt_private
