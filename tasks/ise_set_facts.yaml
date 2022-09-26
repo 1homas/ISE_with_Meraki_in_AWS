@@ -7,8 +7,8 @@
 # ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁
 
   - name: Create ise_facts
-    ansible.builtin.set_fact: 
-      ise_facts: 
+    ansible.builtin.set_fact:
+      ise_facts:
         ise_hostname: "{{ item.private_ip }}"
 
   # - name: Verify ise_facts
@@ -21,8 +21,8 @@
     delegate_to: localhost
     ansible.builtin.uri:
       url: "https://{{ item.private_ip }}/ers/config/op/systemconfig/iseversion"
-      url_username: "{{ ise_rest_username }}"
-      url_password: "{{ ise_rest_password }}"
+      url_username: "{{ ise_username }}"
+      url_password: "{{ ise_password }}"
       headers:
         Accept: application/json
       validate_certs: "{{ ise_verify }}"
@@ -39,7 +39,7 @@
 
   - name: Set Facts for ISE Version & Patch
     loop: "{{ result.json.OperationResult.resultValue }}"
-    ansible.builtin.set_fact: 
+    ansible.builtin.set_fact:
       ise_facts: "{{ ise_facts | default({}) | combine( { item.name : item.value } ) }}"
 
   - name: Show ise_facts

@@ -1,0 +1,89 @@
+---
+#
+# Create RADIUS probes identity groups and internal usernames+passwords
+#
+
+
+# - name: Create RADIUS_Probes
+#   hosts: ise_deployment
+#   vars_files:
+#     - ../vars/credentials.dCloud.yaml
+#   gather_facts: no
+#   tasks:
+
+
+  - name: Create `RADIUS_Probes` identity group
+    cisco.ise.identity_group:
+      ise_hostname: "{{ ansible_host }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify:   "{{ ise_verify }}"
+      state: present
+      name: RADIUS_Probes
+      description: Group for RADIUS probe internal users
+      parent: NAC Group:NAC:IdentityGroups:User Identity Groups
+    register: result
+
+  # - name: result
+  #   ansible.builtin.debug: var=result
+
+  - name: Get All Identity Groups
+    cisco.ise.identity_group_info:
+      ise_hostname: "{{ ansible_host }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify:   "{{ ise_verify }}"
+    register: result
+
+  # - name: Result
+  #   ansible.builtin.debug: var=result
+
+
+  - name: Identity Groups
+    # when: authorization_profiles is defined and authorization_profiles != []
+    delegate_to: localhost
+    changed_when: false
+    ansible.builtin.set_fact:
+      group_list: '{{ result.ise_response
+        | list
+        | rejectattr("name", "!=", "RADIUS_Probes")
+        }}'
+
+  - name: Set RADIUS_Probes identity group ID
+    ansible.builtin.set_fact:
+      radius_probes_group_id: '{{ group_list[0].id }}'
+
+  - name: radius_probes_group_id
+    ansible.builtin.debug: var=radius_probes_group_id
+
+
+  - name: Internal User Accounts
+
+    vars:
+      radius_probe_users:
+
+      - username: meraki_8021x_test
+        password: C1sco12345
+        description: "Cisco Meraki RADIUS Test Probe"
+
+      - username: radius-probe
+        password: C1sco12345
+        description: "Cisco RADIUS Test Probe"
+
+    loop: "{{ radius_probe_users }}"
+    cisco.ise.internal_user:
+      ise_hostname: "{{ ansible_host }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify:   "{{ ise_verify }}"
+      state: "{{ item.state | default('present') }}"
+      name: "{{ item.username }}"
+      password: "{{ item.password }}"
+      changePassword: "{{ item.changePassword | default(false) }}"
+      enabled: "{{ item.enabled | default(true) }}"
+      expiryDateEnabled: "{{ item.expiryDateEnabled | default(false) }}"
+      passwordIDStore: Internal Users
+      identityGroups: "{{ radius_probes_group_id }}"
+
+
+...

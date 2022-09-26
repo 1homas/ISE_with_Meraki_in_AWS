@@ -1,0 +1,35 @@
+---
+
+
+  - name: Create ISE Internal User | {{ item.username }}
+    delegate_to: localhost
+    vars:
+      default_identity_groups: a1740510-8c01-11e6-996c-525400b48521  # Employee
+    cisco.ise.internal_user:
+      ise_hostname: "{{ ansible_host }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify:   "{{ ise_verify }}"
+      ise_debug:    "{{ ise_debug }}"
+      state: "{{ item.state | default('present') }}"
+      name:  "{{ item.username }}"
+      password: "{{ item.password | default('ISEisC00L') }}"
+      changePassword: "{{ item.changePassword | default(False) }}"
+      enabled: "{{ item.enabled | default(True) }}"
+      expiryDateEnabled: "{{ item.expiryDateEnabled | default(False) }}"
+      passwordIDStore:   "{{ item.idStore | default('Internal Users') }}"
+      identityGroups:    "{{ item.identityGroups | default(default_identity_groups) }}"
+      # ▼▼▼ optional attributes ▼▼▼
+      # changePassword: '{{ item.changePassword | default(False) }}'
+      # passwordIDStore: '{{ item.idStore | default(Internal Users) }}'
+      # identityGroups: a1740510-8c01-11e6-996c-525400b48521
+      # customAttributes:
+      #   Created:
+      #   Expired:   register: create_users
+    register: created
+    tags:
+    - internal_user
+    - create
+
+
+...

@@ -1,0 +1,62 @@
+---
+
+
+  # - name: Default endpoint group ID
+  #   ansible.builtin.set_fact:
+  #     endpoint_group_default: aa13bb40-8bff-11e6-996c-525400b48521
+
+  - name: Create Endpoint | {{ item.mac }}
+    delegate_to: localhost
+    vars:
+      endpoint_group_default: aa13bb40-8bff-11e6-996c-525400b48521
+    cisco.ise.endpoint:
+      ise_hostname: "{{ ansible_host }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify:   "{{ ise_verify }}"
+      ise_debug:    "{{ ise_debug }}"
+      state: "{{ item.state | default('present') }}"  # ['present', 'absent']
+      mac:   "{{ item.mac }}"
+
+      # ▼▼▼ optional attributes ▼▼▼
+      description: "{{ item.description | default(omit, true) }}"     # string
+
+      # identityStore: string
+      # identityStoreId: string
+
+      # portalUser: string
+
+      # Endpoint Group Assignment
+      groupId: "{{ item.groupId | default( omit ) }}" # UUID
+      # groupId: "{{ item.groupId | default( endpoint_group_default ) }}"  # UUID
+
+      # profileId: "{{ groupId | default('0a9c6890-8c00-11e6-996c-525400b48521') }}"
+      staticGroupAssignment:   "{{ item.staticGroupAssignment   | default(false) }}"
+
+      # Endpoint Profile Assignment
+      staticProfileAssignment: "{{ item.staticProfileAssignment | default(false) }}"
+
+      customAttributes:
+        customAttributes: "{{ item.customAttributes | default( omit ) }}"
+
+      # MDM Attributes
+      # mdmAttributes:
+      #   mdmComplianceStatus: true
+      #   mdmEncrypted: true
+      #   mdmEnrolled: true
+      #   mdmIMEI: string
+      #   mdmJailBroken: true
+      #   mdmManufacturer: string
+      #   mdmModel: string
+      #   mdmOS: string
+      #   mdmPhoneNumber: string
+      #   mdmPinlock: true
+      #   mdmReachable: true
+      #   mdmSerial: string
+      #   mdmServerName: string
+
+    # ignore_errors: yes
+    tags: [ create, endpoint, endpoints ]
+
+
+...

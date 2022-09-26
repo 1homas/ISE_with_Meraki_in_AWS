@@ -1,0 +1,127 @@
+---
+
+
+  - name: Create Network Device | {{ item.name }}
+    delegate_to: localhost
+    cisco.ise.network_device:
+      ise_hostname: "{{ ansible_host }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify:   "{{ ise_verify }}"
+      ise_debug:    "{{ ise_debug }}"
+
+      state:       "{{ item.state | default('present') }}"          # string
+      name:        "{{ item.name }}"                                # string
+      description: "{{ item.description | default('')}}"            # string
+      profileName: "{{ item.profileName | default('Cisco') }}"      # string
+      modelName:   "{{ item.modelName | default( omit ) }}"                    # string
+      softwareVersion: "{{ item.softwareVersion | default( omit ) }}"          # string
+
+      NetworkDeviceIPList: "{{ item.NetworkDeviceIPList }}"         # list of dicts
+      # - getIpaddressExclude: string
+      #   ipaddress: string
+      #   mask: 0
+      NetworkDeviceGroupList: "{{ item.network_device_groups | default( omit ) }}"  # list of strings
+
+      #------------------------------------------------------------------------
+      # RADIUS Authentication Settings
+      #------------------------------------------------------------------------
+      authenticationSettings:
+        # enabled: true
+        # RADIUS UDP Settings
+        networkProtocol: RADIUS
+        radiusSharedSecret: "{{ item.radiusSharedSecret | default( ise.radius.secret ) | default( omit ) }}"
+        enableMultiSecret:  "{{ item.enableMultiSecret | default('false') }}" # ⚠ string, not boolean!
+        secondRadiusSharedSecret: "{{ item.secondRadiusSharedSecret | default( omit ) }}"
+        # RADIUS DTLS Settings
+        dtlsRequired:  "{{ item.dtlsRequired | default( false ) }}"
+        # General Settings
+        enableKeyWrap:    "{{ item.enableKeyWrap | default( false ) }}"
+        keyEncryptionKey: "{{ item.keyEncryptionKey | default( omit ) }}" # string
+        messageAuthenticatorCodeKey: "{{ item.keyInputFormat | default( omit ) }}" # string
+        keyInputFormat: "{{ item.keyInputFormat | default( omit ) }}"    # [ 'ASCII', 'HEXADECIMAL' ]
+      coaPort:     "{{ item.coaPort | default(1700) }}"             # string
+      dtlsDnsName: "{{ item.dtlsDnsName | default( omit ) }}"                  # string
+
+      #------------------------------------------------------------------------
+      # TACACS Settings
+      #------------------------------------------------------------------------
+      tacacsSettings:
+        sharedSecret: "{{ item.sharedSecret | default( ise.tacacs.secret ) | default( omit ) }}"   # string
+        connectModeOptions: "{{ item.connectModeOptions | default('OFF') }}"            # string
+
+      #------------------------------------------------------------------------
+      # SNMP Settings
+      # ToDo: Fix NetworkDevice.snmpsettings.pollingInterval must be integer
+      #------------------------------------------------------------------------
+      # snmpsettings:
+      #   pollingInterval: "{{ item.pollingInterval | default(0) | int }}" # int (seconds) 0, 28800, 600-86400
+      #   version:         "{{ item.version     | default( omit ) }}" # string: ['1','2c','3']
+      #   roCommunity:     "{{ item.roCommunity | default( omit ) }}" # string
+
+      #   # Unsupported Attributes
+      #   # SNMP Username
+      #   # Security Level
+      #   # Auth Protocol
+      #   # Auth Password
+      #   # Privacy Protocol
+      #   # Privacy Password
+
+      #   # Traps
+      #   linkTrapQuery: "{{ item.linkTrapQuery | default( false ) }}"   # boolean
+      #   macTrapQuery:  "{{ item.macTrapQuery  | default( false ) }}"   # boolean
+      #   originatingPolicyServicesNode: "{{ item.originatingPolicyServicesNode | default( omit ) }}" # string ('Auto')
+
+      #------------------------------------------------------------------------
+      # Advanced TrustSec Settings
+      #------------------------------------------------------------------------
+      # trustsecsettings:
+      #   # Device Authentication Settings
+      #   pushIdSupport: "{{ item.pushIdSupport | default( false ) }}" # boolean
+      #   deviceAuthenticationSettings:
+      #     # Unsupported: Use Device ID for TrustSec Identification
+      #     sgaDeviceId: "{{ item.sgaDeviceId | default( omit ) }}" # string
+      #     sgaDevicePassword: "{{ item.sgaDevicePassword | default( omit ) }}" # string
+
+        # Enable HTTP REST API
+        #   Username
+        #   Password
+        #   Support TrustSec Verification reports
+
+        # # Device Configuration Deployment
+        # deviceConfigurationDeployment:
+        #   includeWhenDeployingSGTUpdates: "{{ item.includeWhenDeployingSGTUpdates | default( false ) }}"
+        #   # Device Interface Credentials
+        #   execModeUsername:   "{{ item.execModeUsername   | default( omit ) }}" # string
+        #   execModePassword:   "{{ item.execModePassword   | default( omit ) }}" # string
+        #   enableModePassword: "{{ item.enableModePassword | default( omit ) }}" # string
+
+        # TrustSec Notifications and Updates
+        #----------------------------------------------------------------------
+        # ⚠ ToDo: Fix integer errors:
+        #   downlaodEnvironmentDataEveryXSeconds must be integer
+        #   downlaodPeerAuthorizationPolicyEveryXSeconds must be integer
+        #   reAuthenticationEveryXSeconds must be integer
+        #   downloadSGACLListsEveryXSeconds must be integer
+        #----------------------------------------------------------------------
+        # sgaNotificationAndUpdates:
+        #   # ⚠ API attribute is mispelled: "downlaod"
+        #   downlaodEnvironmentDataEveryXSeconds: "{{ item.downlaodEnvironmentDataEveryXSeconds | default(0) | int }}" # 0 (off), 86400 (default)
+        #   # ⚠ API attribute is mispelled: "downlaod"
+        #   downlaodPeerAuthorizationPolicyEveryXSeconds: "{{ item.downlaodPeerAuthorizationPolicyEveryXSeconds | default(0) | int }}" # 0 (off), 86400 (default)
+        #   reAuthenticationEveryXSeconds: "{{ item.reAuthenticationEveryXSeconds | default(0) | int }}" # 0 (off), 86400 (default)
+        #   downloadSGACLListsEveryXSeconds: "{{ item.downloadSGACLListsEveryXSeconds | default(0) | int }}" # 0 (off), 86400 (default)
+        #   otherSGADevicesToTrustThisDevice: "{{ item.otherSGADevicesToTrustThisDevice | default(true) }}"
+        #   sendConfigurationToDevice: "{{ item.sendConfigurationToDevice | default(true) }}"
+        #   sendConfigurationToDeviceUsing: "{{ item.sendConfigurationToDeviceUsing | default( omit ) }}" # string: ['CoA', 'CLI (SSH)']
+        #   coaSourceHost: "{{ item.coaSourceHost | default( omit ) }}" # string: (ISE node name)
+        #   # ⚠ Missing: Ssh Key
+
+        # Out of Band (OOB) TrustSec PAC
+        #   Issue Date
+        #   Expiration Date
+        #   Issued By
+
+    tags: [ network_device, network_devices, nad, nads ]
+
+...
