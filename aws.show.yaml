@@ -368,22 +368,5 @@
     - subnet
     - vpc
 
-  # #
-  # # s3_buckets
-  # #
-  # - name: Get All s3_bucket
-  #   amazon.aws.s3_bucket:
-  #     region: "{{ aws_region }}"
-  #   register: result
-  #   tags:
-  #   - s3
-  #   - bucket
-
-  # - name: result
-  #   ansible.builtin.debug: var=result
-  #   tags:
-  #   - s3
-  #   - bucket
-
 
 ...
