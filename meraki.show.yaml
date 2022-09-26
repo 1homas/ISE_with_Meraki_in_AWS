@@ -37,8 +37,8 @@
     ansible.builtin.set_fact: 
       admin_emails: "{{ admins.data | community.general.json_query(query) }}"
 
-  - name: Show administrators' email addresses
-    ansible.builtin.debug: var=admin_emails
+  # - name: Show administrators' email addresses
+  #   ansible.builtin.debug: var=admin_emails
 
 
 
