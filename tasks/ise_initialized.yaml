@@ -3,14 +3,6 @@
 # Test for ISE Application Server Initialization
 #
 
-  - name: Ping {{ pingvm_private_ip }}
-    delegate_to: localhost
-    ansible.builtin.ping:
-    register: result
-    until: result.failed == false
-    retries: 100
-    delay: 5
-
 
   - name: Wait for ISE App Server (GUI) | {{ inventory_hostname }}
     delegate_to: localhost
@@ -26,10 +18,27 @@
     retries: 1000
     delay: 10
 
-  - name: Initialized? | {{ inventory_hostname }}
+  - name: ISE ({{ inventory_hostname }}) is Ready!
     when: result.status == 200
-    ansible.builtin.debug:
-      msg : "✅ ISE Application Server {{ item.private_ip }} Initialized"
+    ansible.builtin.pause:
+      seconds: 1
+      prompt: |
+                         .
+                        /|\
+                       /|||\
+                      /|||||\
+               @@    /|||||||\    @@
+             @@     /|||||||||\     @@
+            @@     /|||||||||||\     @@
+           @@      \||/     \||/      @@
+          /@        _  ___  ___        @\
+          @@       | |/ __|/ __|       @@
+          \@       | |\__ \| _|        @/
+           @@      |_||___/\___|      @@
+             @@                     @@
+               @@,_             _,@@
+                 ^^Y@@@@@@@@@@@Y^^
+         
 
 
 ...

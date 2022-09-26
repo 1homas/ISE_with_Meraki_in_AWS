@@ -42,28 +42,6 @@
     loop: "{{ ise_nodes }}"
     ansible.builtin.include_tasks: tasks/ise_initialized.yaml
 
-  - name: ISE is Ready!
-    ansible.builtin.pause:
-      seconds: 1
-      prompt: |
-                         .
-                        /|\
-                       /|||\
-                      /|||||\
-               @@    /|||||||\    @@
-             @@     /|||||||||\     @@
-            @@     /|||||||||||\     @@
-           @@      \||/     \||/      @@  
-          /@        _  ___  ___        @\ 
-          @@       | |/ __|/ __|       @@ 
-          \@       | |\__ \| _|        @/  
-           @@      |_||___/\___|      @@  
-             @@                     @@
-               @@,_             _,@@
-                 ^^Y@@@@@@@@@@@Y^^
-         
-
-
   - name: Configure ISE
     ansible.builtin.include_tasks: ise.configuration.yaml
 
