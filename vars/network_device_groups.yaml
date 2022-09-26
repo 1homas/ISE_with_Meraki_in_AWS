@@ -4,6 +4,8 @@
 #
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# 🐞 ISE ERS API does not like `-` in NDG names?! `_` is OK!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # 🛑 Do not try to create or delete these default Network Device Groups!
 #   - Device Type#All Device Types
 #   - IPSEC#Is IPSEC Device
@@ -18,79 +20,67 @@ network_device_groups:
 # Network Device Groups by Enforcement
 #------------------------------------------------------------------------------
 
-- name: Enforcement#Enforcement
-  description: All Enforcement Options
-  othername: Enforcement
+# - name: Enforcement#Enforcement
+#   description: All Enforcement Options
+#   othername: Enforcement
 
-- name: Enforcement#Enforcement#Monitor
-  description: Monitor
-  othername: Enforcement
+# - name: Enforcement#Enforcement#Monitor
+#   description: Monitor
+#   othername: Enforcement
 
-- name: Enforcement#Enforcement#LowImpact
-  description: LowImpact
-  othername: Enforcement
+# - name: Enforcement#Enforcement#LowImpact
+#   description: LowImpact
+#   othername: Enforcement
 
-- name: Enforcement#Enforcement#Closed
-  description: Closed
-  othername: Enforcement
-
-
+# - name: Enforcement#Enforcement#Closed
+#   description: Closed
+#   othername: Enforcement
 
 
 #------------------------------------------------------------------------------
 # Network Device Groups by Place In The Network (PIN)
 #------------------------------------------------------------------------------
 
+# - name: PIN#PIN
+#   description: Place in the Network (PIN)
+#   othername: PIN
 
-- name: PIN#PIN
-  description: Place in the Network (PIN)
-  othername: PIN
+# - name: PIN#PIN#Branch
+#   description: Branch
+#   othername: PIN
 
-- name: PIN#PIN#Branch
-  description: Branch
-  othername: PIN
+# - name: PIN#PIN#Campus
+#   description: Campus
+#   othername: PIN
 
-- name: PIN#PIN#Campus
-  description: Campus
-  othername: PIN
+# - name: PIN#PIN#WAN
+#   description: WAN
+#   othername: PIN
 
-- name: PIN#PIN#WAN
-  description: WAN
-  othername: PIN
+# - name: PIN#PIN#InternetEdge
+#   description: InternetEdge
+#   othername: PIN
 
-- name: PIN#PIN#InternetEdge
-  description: InternetEdge
-  othername: PIN
-
-- name: PIN#PIN#Cloud
-  description: Cloud
-  othername: PIN
-
-
+# - name: PIN#PIN#Cloud
+#   description: Cloud
+#   othername: PIN
 
 
 #------------------------------------------------------------------------------
 # Device Type#All Device Types#Wireless
 #------------------------------------------------------------------------------
+
 - name: Device Type#All Device Types#Wireless
   description: Wireless
   othername: Device Type
 
-- name: Device Type#All Device Types#Wireless#WLC
-  description: Cisco Catalyst WLC
+- name: Device Type#All Device Types#Wireless#9800CL
+  description: Cisco Catalyst Catalyst 9800CL WLC
   othername: Device Type
 
-- name: Device Type#All Device Types#Wireless#9800
-  description: Cisco Catalyst Catalyst 9800-L WLC
-  othername: Device Type
-
-- name: Device Type#All Device Types#Wireless#EWC-AP
-  description: Cisco Catalyst 9800-EWC-AP Embedded Wireless Controller (EWC)
-  othername: Device Type
-
-- name: Device Type#All Device Types#Wireless#9800-CL
-  description: Cisco Catalyst Catalyst 9800-CL WLC
-  othername: Device Type
+# - name: Device Type#All Device Types#Wireless#9800EWCAP
+#   description: Cisco Catalyst 9800-EWC-AP Embedded Wireless Controller (EWC)
+#   othername: Device Type
 
 - name: Device Type#All Device Types#Wireless#MR
   description: Cisco Meraki MR
@@ -101,11 +91,10 @@ network_device_groups:
   othername: Device Type
 
 
-
-
 #------------------------------------------------------------------------------
 # Device Type#All Device Types#Switches
 #------------------------------------------------------------------------------
+
 - name: Device Type#All Device Types#Switches
   description: Switches
   othername: Device Type
@@ -118,21 +107,21 @@ network_device_groups:
   description: Cisco Catalyst 3000 Series Switch
   othername: Device Type
 
-- name: Device Type#All Device Types#Switches#Catalyst#6K
-  description: Cisco Catalyst 6500 Series Switch
-  othername: Device Type
+# - name: Device Type#All Device Types#Switches#Catalyst#6K
+#   description: Cisco Catalyst 6500 Series Switch
+#   othername: Device Type
 
 - name: Device Type#All Device Types#Switches#Catalyst#9K
   description: Cisco Catalyst 9000 Series Switch
   othername: Device Type
 
-- name: Device Type#All Device Types#Switches#Micro
-  description: Cisco Catalyst Micro Switch
-  othername: Device Type
+# - name: Device Type#All Device Types#Switches#Micro
+#   description: Cisco Catalyst Micro Switch
+#   othername: Device Type
 
-- name: Device Type#All Device Types#Switches#IE
-  description: Cisco Industrial Ethernet (IE) Switches
-  othername: Device Type
+# - name: Device Type#All Device Types#Switches#IE
+#   description: Cisco Industrial Ethernet (IE) Switches
+#   othername: Device Type
 
 - name: Device Type#All Device Types#Switches#MS
   description: Cisco Meraki MS
@@ -144,10 +133,6 @@ network_device_groups:
 
 - name: Device Type#All Device Types#Switches#MS#MS390
   description: Cisco Meraki MS390
-  othername: Device Type
-
-- name: Device Type#All Device Types#Switches#MS
-  description: Cisco Meraki MS
   othername: Device Type
 
 
@@ -192,11 +177,9 @@ network_device_groups:
   description: VPN
   othername: Device Type
 
-- name: Device Type#All Device Types#VPN#ASA
-  description: Cisco ASA
-  othername: Device Type
-
-
+# - name: Device Type#All Device Types#VPN#ASA
+#   description: Cisco ASA
+#   othername: Device Type
 
 
 #------------------------------------------------------------------------------
@@ -315,45 +298,45 @@ network_device_groups:
   description: AMER
   othername: Location
 
-- name: Location#All Locations#AMER#AST
-  description: Austin, TX, US
-  othername: Location
+# - name: Location#All Locations#AMER#AST
+#   description: Austin, TX, US
+#   othername: Location
 
-- name: Location#All Locations#AMER#ATL
-  description: Atlanta, GA, US
-  othername: Location
+# - name: Location#All Locations#AMER#ATL
+#   description: Atlanta, GA, US
+#   othername: Location
 
-- name: Location#All Locations#AMER#CHI
-  description: Chicago, IL, US
-  othername: Location
+# - name: Location#All Locations#AMER#CHI
+#   description: Chicago, IL, US
+#   othername: Location
 
 - name: Location#All Locations#AMER#HBC
   description: Huntington Beach, CA, US
   othername: Location
 
-- name: Location#All Locations#AMER#HRN
-  description: Herndon, VA, US
-  othername: Location
+# - name: Location#All Locations#AMER#HRN
+#   description: Herndon, VA, US
+#   othername: Location
 
-- name: Location#All Locations#AMER#IRV
-  description: Irvine, CA, US
-  othername: Location
+# - name: Location#All Locations#AMER#IRV
+#   description: Irvine, CA, US
+#   othername: Location
 
-- name: Location#All Locations#AMER#MXC
-  description: Mexico City, MX
-  othername: Location
+# - name: Location#All Locations#AMER#MXC
+#   description: Mexico City, MX
+#   othername: Location
 
-- name: Location#All Locations#AMER#NYC
-  description: New York, NY, US
-  othername: Location
+# - name: Location#All Locations#AMER#NYC
+#   description: New York, NY, US
+#   othername: Location
 
-- name: Location#All Locations#AMER#RCD
-  description: Richardson, TX, US
-  othername: Location
+# - name: Location#All Locations#AMER#RCD
+#   description: Richardson, TX, US
+#   othername: Location
 
-- name: Location#All Locations#AMER#RTP
-  description: Raleigh, NC, US
-  othername: Location
+# - name: Location#All Locations#AMER#RTP
+#   description: Raleigh, NC, US
+#   othername: Location
 
 - name: Location#All Locations#AMER#SJC
   description: San Jose, CA, US

@@ -1,0 +1,20 @@
+---
+#
+# internal_users
+#
+
+identity_group_ids: a1740510-8c01-11e6-996c-525400b48521  # Employee
+
+internal_users:
+- username: charlie
+- username: hsingtsu
+- username: joff
+- username: krishnan
+- username: matt
+- username: pavan
+- username: thomas
+- username: tim
+
+
+
+...

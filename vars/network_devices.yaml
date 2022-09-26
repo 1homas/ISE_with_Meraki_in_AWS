@@ -1,0 +1,126 @@
+---
+#
+# Network Devices
+#
+
+network_devices:
+
+#------------------------------------------------------------------------------
+# Cisco Catalyst WLCs
+#------------------------------------------------------------------------------
+
+- name: dCloud-9800CL-1
+  description: Cisco vWLC in dCloud
+  state: present
+  NetworkDeviceIPList:
+  - ipaddress: 198.19.11.10
+    mask: 32
+  NetworkDeviceGroupList:
+  - Device Type#All Device Types#Wireless#WLC
+  - Location#All Locations#AMER#SJC
+  profileName: Cisco
+  radiusSharedSecret: ISEisC00L   # RADIUS
+  sharedSecret: ISEisC00L         # TACACS
+
+
+#------------------------------------------------------------------------------
+# Cisco Catalyst Switches
+#------------------------------------------------------------------------------
+
+# - name: lab-3560cx-1
+#   description: Cisco 3560CX
+#   state: present
+#   NetworkDeviceIPList:
+#   - ipaddress: 10.80.60.152
+#     mask: 32
+#   NetworkDeviceGroupList:
+#   - Device Type#All Device Types#Switches#Catalyst#3K
+#   - Location#All Locations#AMER#HBC
+#   profileName: Cisco
+#   radiusSharedSecret: ISEisC00L   # RADIUS
+#   sharedSecret: ISEisC00L         # TACACS
+
+
+#------------------------------------------------------------------------------
+# Meraki MX
+#------------------------------------------------------------------------------
+
+- name: lab-mx68-1
+  description: MX68
+  state: present
+  NetworkDeviceIPList:
+  - ipaddress: 192.168.101.1
+    mask: 32
+  NetworkDeviceGroupList:
+  - Device Type#All Device Types#SDWAN#MX#MX68
+  - Location#All Locations#AMER#HBC
+  profileName: Cisco
+  radiusSharedSecret: ISEisC00L   # RADIUS
+
+
+#------------------------------------------------------------------------------
+# Meraki MR APs
+#------------------------------------------------------------------------------
+
+- name: lab-mr46-1
+  description: Cisco Meraki MR46
+  state: present
+  NetworkDeviceIPList:
+  - ipaddress: 10.80.60.150
+    mask: 32
+  NetworkDeviceGroupList:
+  - Device Type#All Device Types#Wireless#MR#MR46
+  - Location#All Locations#AMER#HBC
+  profileName: Cisco
+  radiusSharedSecret: ISEisC00L   # RADIUS
+  sharedSecret: ISEisC00L         # TACACS
+
+
+#------------------------------------------------------------------------------
+# Meraki Z
+#------------------------------------------------------------------------------
+
+# - name: teleworker-thomas
+#   description: Cisco Meraki Z3
+#   state: present
+#   NetworkDeviceIPList:
+#   - ipaddress: 192.168.111.1
+#     mask: 32
+#   NetworkDeviceGroupList:
+#   - Device Type#All Device Types#SDWAN#Z#Z3
+#   - Location#All Locations#AMER#HBC
+#   profileName: Cisco
+#   radiusSharedSecret: ISEisC00L   # RADIUS
+
+
+# - name: teleworker-employee
+#   description: Cisco Meraki Z3
+#   state: present
+#   NetworkDeviceIPList:
+#   - ipaddress: 192.168.112.1
+#     mask: 32
+#   NetworkDeviceGroupList:
+#   - Device Type#All Device Types#SDWAN#Z#Z3
+#   - Location#All Locations#AMER#HBC
+#   profileName: Cisco
+#   radiusSharedSecret: ISEisC00L   # RADIUS
+
+
+#------------------------------------------------------------------------------
+# Meraki MS
+#------------------------------------------------------------------------------
+
+- name: lab-ms390-1
+  description: MS390
+  state: present
+  NetworkDeviceIPList:
+  - ipaddress: 192.168.101.5
+    mask: 32
+  NetworkDeviceGroupList:
+  - Device Type#All Device Types#Switches#MS#MS390
+  - Location#All Locations#AMER#HBC
+  profileName: Cisco
+  radiusSharedSecret: ISEisC00L   # RADIUS
+
+
+...

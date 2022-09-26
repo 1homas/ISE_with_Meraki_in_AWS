@@ -2,50 +2,44 @@
 #
 # Endpoints
 #
-
-cameras_groupId: 3a88eec0-8c00-11e6-996c-525400b48521  # Trendnet-Device
-ipphone_groupId: 14f5cac0-8c00-11e6-996c-525400b48521  # Cisco-IP-Phone
-printer_groupId: 22c6c780-8c00-11e6-996c-525400b48521  # Epson-Device
-ipads_groupId: aa13bb40-8bff-11e6-996c-525400b48521    # ?
+endpoints:
 
 #------------------------------------------------------------------------------
 # Cameras
 #------------------------------------------------------------------------------
 
-endpoints:
+- mac: "11:22:33:44:55:66"
+  description: Minimal endpoint definition with IEEE 802 MAC format (XX-XX-XX-XX-XX-XX)
 
-- name: D8-EB-97-85-F8-C9
-  mac: D8-EB-97-85-F8-C9
+- mac: "C0:FF:EE:EE:CA:FE"
+  description: Minimal endpoint definition with Colon format (XX:XX:XX:XX:XX:XX)
+
+- mac: "DEAD.BEEF.CAFE"
+  description: Minimal required definition with alternative dot-format (XXXX.XXXX.XXXX)
+
+- mac: "CC:00:FF:FF:EE:EE"
+  description: Coffee Machine
+
+- mac: "3141.5926.5358"
+  description: Raspberry Pi 8-)
+
+- mac: D8-EB-97-85-F8-C9
   endpoint_type: Camera
   description: Surveillance Camera
   staticGroupAssignment: true
-  groupId: "{{ cameras_groupId }}"
+  groupId: 3a88eec0-8c00-11e6-996c-525400b48521  # Trendnet-Device
 
-- name: D8-EB-97-A2-51-2C
-  mac: D8-EB-97-A2-51-2C
+- mac: D8-EB-97-A2-51-2C
   endpoint_type: Camera
   description: Surveillance Camera
   staticGroupAssignment: true
-  groupId: "{{ cameras_groupId }}"
+  groupId: 3a88eec0-8c00-11e6-996c-525400b48521  # Trendnet-Device
 
-- name: D8-EB-97-80-52-DB
-  mac: D8-EB-97-80-52-DB
+- mac: D8-EB-97-80-52-DB
   endpoint_type: Camera
   description: Surveillance Camera
   staticGroupAssignment: true
-  groupId: "{{ cameras_groupId }}"
-
-
-
-#------------------------------------------------------------------------------
-# iPads
-#------------------------------------------------------------------------------
-
-# - name: iPad
-#   mac: 11:22:33:44:55:66
-#   description: iPad
-#   staticGroupAssignment: true
-#   groupId: "{{ ipads_groupId }}"
+  groupId: 3a88eec0-8c00-11e6-996c-525400b48521  # Trendnet-Device
 
 
 
@@ -53,26 +47,23 @@ endpoints:
 # IP Phones
 #------------------------------------------------------------------------------
 
-- name: 00-11-BB-EF-EE-66
-  mac: 00-11-BB-EF-EE-66
+- mac: 00-11-BB-EF-EE-66
   endpoint_type: IP Phone
   description: IP Phone
   staticGroupAssignment: true
-  groupId: "{{ ipphone_groupId }}"
+  groupId: 14f5cac0-8c00-11e6-996c-525400b48521  # Cisco-IP-Phone
 
-- name: 00-11-BB-5F-C4-28
-  mac: 00-11-BB-5F-C4-28
+- mac: 00-11-BB-5F-C4-28
   endpoint_type: IP Phone
   description: IP Phone
   staticGroupAssignment: true
-  groupId: "{{ ipphone_groupId }}"
+  groupId: 14f5cac0-8c00-11e6-996c-525400b48521  # Cisco-IP-Phone
 
-- name: 00-11-BB-9E-57-BC
-  mac: 00-11-BB-9E-57-BC
+- mac: 00-11-BB-9E-57-BC
   endpoint_type: IP Phone
   description: IP Phone
   staticGroupAssignment: true
-  groupId: "{{ ipphone_groupId }}"
+  groupId: 14f5cac0-8c00-11e6-996c-525400b48521  # Cisco-IP-Phone
 
 
 
@@ -81,26 +72,23 @@ endpoints:
 # Printers
 #------------------------------------------------------------------------------
 
-- name: 00-00-AA-41-8C-A8
-  mac: 00-00-AA-41-8C-A8
+- mac: 00-00-AA-41-8C-A8
   endpoint_type: Printer
   description: Printers
   staticGroupAssignment: true
-  groupId: "{{ printer_groupId }}"
+  groupId: 22c6c780-8c00-11e6-996c-525400b48521  # Epson-Device
 
-- name: 00-00-AA-C0-93-18
-  mac: 00-00-AA-C0-93-18
+- mac: 00-00-AA-C0-93-18
   endpoint_type: Printer
   description: Printers
   staticGroupAssignment: true
-  groupId: "{{ printer_groupId }}"
+  groupId: 22c6c780-8c00-11e6-996c-525400b48521  # Epson-Device
 
-- name: 00-00-AA-C8-66-92
-  mac: 00-00-AA-C8-66-92
+- mac: 00-00-AA-C8-66-92
   endpoint_type: Printer
   description: Printers
   staticGroupAssignment: true
-  groupId: "{{ printer_groupId }}"
+  groupId: 22c6c780-8c00-11e6-996c-525400b48521  # Epson-Device
 
 
 
