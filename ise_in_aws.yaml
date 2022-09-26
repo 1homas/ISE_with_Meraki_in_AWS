@@ -6,36 +6,66 @@
 
 - name: AWS VPC with Cisco ISE and Meraki vMX 
   hosts: localhost
-  gather_facts: yes   # required for `ansible_date_time`
+  gather_facts: no
   vars_files:
     vars/main.yaml
   tasks:
 
-
   - name: Create SSH KeyPair
     ansible.builtin.include_tasks: ssh_key_pair.yaml
-
 
   - name: Create VPC
     ansible.builtin.include_tasks: ise_in_aws.vpc.yaml
 
-
   - name: Create ISE (no wait)
     ansible.builtin.include_tasks: ise_in_aws.ise.yaml
-
 
   - name: Create vMX
     ansible.builtin.include_tasks: ise_in_aws.vmx.yaml
     tags: meraki,vmx
 
-
   - name: Create PingVM
     ansible.builtin.include_tasks: ise_in_aws.ping_vm.yaml
 
+  - name: Refresh AWS Inventory to get the new Instance(s)
+    ansible.builtin.meta: refresh_inventory
 
-  - name: Wait for ISE to be Initialized
+
+- name: Initialize ISE Nodes
+  hosts: ise
+  gather_facts: no
+  vars_files:
+    vars/main.yaml
+  tasks:
+
+  - name: Wait for ISE Application Server Initialization
     loop: "{{ ise_nodes }}"
     ansible.builtin.include_tasks: tasks/ise_initialized.yaml
+
+  - name: ISE is Ready!
+    ansible.builtin.pause:
+      seconds: 1
+      prompt: |
+                         .
+                        /|\
+                       /|||\
+                      /|||||\
+               @@    /|||||||\    @@
+             @@     /|||||||||\     @@
+            @@     /|||||||||||\     @@
+           @@      \||/     \||/      @@  
+          /@        _  ___  ___        @\ 
+          @@       | |/ __|/ __|       @@ 
+          \@       | |\__ \| _|        @/  
+           @@      |_||___/\___|      @@  
+             @@                     @@
+               @@,_             _,@@
+                 ^^Y@@@@@@@@@@@Y^^
+         
+
+
+  - name: Configure ISE
+    ansible.builtin.include_tasks: ise.configuration.yaml
 
 
 ...
