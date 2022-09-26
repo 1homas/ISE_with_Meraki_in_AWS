@@ -57,10 +57,11 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
 
     ```bash
     # ISE REST API Credentials
-    export ise_username=admin
-    export ise_username=ISEisC00L
+    export ISE_REST_USERNAME=admin
+    export ISE_REST_PASSWORD=ISEisC00L
     export ISE_VERIFY=false
     ```
+
     Alternatively, keep your environment variables in files in a `.env` or similar folder in your home directory and use `source {filename}` to load environment variables from the files:
 
     ```bash
@@ -88,6 +89,7 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
        | Network        | VPN mode | Subnet          |
        |----------------|----------|-----------------|
        | ISE_Meraki_AWS | Enabled  | `172.31.0.0/16` |
+
     > ⚠ If you cannot ping or SSH to the `Ping` Linux VM this is probably the reason!
 
 7. When ISE is up, you may configure it using the additional playbook :
@@ -105,12 +107,9 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
 
 
 
-
 ## Manual Configuration in AWS Console and Meraki Dashboard
 
 In case you wondered exactly what these Ansible playbooks are doing ... here is how to do it the hard way!  If you want to do it the old-fashioned way or just understand what the time spent on automation is saving you from!
-
-
 
 
 
@@ -460,8 +459,6 @@ ssh -i "~/.ssh/ISEinAWS.pem" admin@{ hostname | IP }
 
 ## License
 
-The examples in this repository are licensed under the [Cisco Sample Code License](https://developer.cisco.com/site/license/cisco-sample-code-license/).
-
-
+This repository is licensed under the [MIT License](https://choosealicense.com/licenses/mit/).
 
 
