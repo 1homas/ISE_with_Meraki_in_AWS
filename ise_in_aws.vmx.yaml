@@ -64,10 +64,8 @@
         "tag:product": "vMX"
     register: vmx
 
-  - name: Show vmx
-    ansible.builtin.debug: var=vmx
-
-
+  # - name: Show vmx
+  #   ansible.builtin.debug: var=vmx
 
 
   # ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠
@@ -98,7 +96,9 @@
     #
     - name: Create vMX Instance
       community.aws.ec2_instance:
-        state: present
+        # state: present  # instances exist but not guarantee of state (e.g. running)
+        state: running  # present + ensures the instances are running for public IP address!
+        # state: started  # running + waits for EC2 status checks; ~3 minutes per node
         vpc_subnet_id: "{{ subnet_public.subnet.id }}"
         region: "{{ aws_region }}"
         image_id: "{{ vmx_aws_ami }}"
@@ -141,8 +141,6 @@
     register: vmx
 
 
-
-
   #
   # ⚠ Requires the vMX to be initialized; Use `wait: yes` above
   # ⚠ Works with eni_id but not subnet_id
@@ -155,10 +153,8 @@
       source_dest_check: false
     register: vmx_eni
 
-  - name: Show vmx_eni
-    ansible.builtin.debug: var=vmx_eni
-
-
+  # - name: Show vmx_eni
+  #   ansible.builtin.debug: var=vmx_eni
 
 
   - name: Add public DNS entry for the vMX
@@ -223,8 +219,8 @@
       state: query
     register: lab_network
 
-  - name: Show lab_network
-    ansible.builtin.debug: var=lab_network
+  # - name: Show lab_network
+  #   ansible.builtin.debug: var=lab_network
 
 
 
@@ -254,9 +250,26 @@
       # 🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞
     register: spoke_mode
 
-  - name: spoke_mode
-    ansible.builtin.debug: var=spoke_mode
+  # - name: spoke_mode
+  #   ansible.builtin.debug: var=spoke_mode
 
+  - name: Manually add the vMX Local Subnet
+    ansible.builtin.pause:
+      prompt: |
+
+        You must now manually add the vMX Local Subnet in the S2S VPN.
+
+        1. Open the Meraki Dashboard
+        2. Go to Security & SDWAN > Configure > Site-to-Site VPN
+        3. Under VPN Settings, Add a Local Network:
+            Name: ISE_Meraki_AWS
+            VPN Mode: Enabled
+            Subnet: 172.31.0.0/16
+        4. Save!
+
+        You may now ping through the auto-VPN into your AWS instance(s)!
+
+        Press Enter to Continue...
 
 
 ...
