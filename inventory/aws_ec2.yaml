@@ -48,10 +48,6 @@ filters:
 
 strict: False
 
-# groups:
-#   redhat: "'redhat' in tags.os"
-#   ubuntu: "'ubuntu' in tags.os"
-
 keyed_groups:
 - key: instance_type
   # prefix: instance_type
