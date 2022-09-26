@@ -40,7 +40,7 @@
   - name: Delete all EC2 instances with tag project:"{{ project_name }}"
     community.aws.ec2_instance:
       state: absent
-      wait: yes
+      wait: no
       filters:
         # instance-state-name: [ "running" ]
         "tag:project": "{{ project_name }}"
