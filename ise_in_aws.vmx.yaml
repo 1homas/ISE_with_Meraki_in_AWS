@@ -42,7 +42,7 @@
       tags:
         Name: SG-AllowAll
         project: "{{ project_name }}"
-        start_date: "{{ ansible_date_time.date }}"
+        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
     register: sg_allowall
 
   # - name: Show sg_allowall
@@ -120,7 +120,7 @@
           Name: "{{ vmx_name }}"
           project: "{{ project_name }}"
           product: vMX
-          start_date: "{{ ansible_date_time.date }}"
+          started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
       register: vmx
 
     # - name: Show vmx
@@ -210,7 +210,7 @@
       tags:
         Name: RT_Private
         project: "{{ project_name }}"
-        start_date: "{{ ansible_date_time.date }}"
+        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
     register: rt_private
 
 
