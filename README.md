@@ -35,9 +35,8 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
     pip install --upgrade pip
     pip install pipenv
     pipenv install --python 3.9
-    pipenv install ansible boto boto3 botocore ciscoisesdk jmespath 
+    pipenv install ansible boto3 botocore ciscoisesdk jmespath 
     pipenv shell
-    ansible-galaxy collection install cisco.ise
     ```
 
     If you have any problems installing Python or Ansible, see [Installing Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
@@ -58,16 +57,16 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
 
     ```bash
     # ISE REST API Credentials
-    export ise_username='admin'
-    export ise_password='C1sco12345'
-    export ise_verify=false
+    export ise_username=admin
+    export ise_username=ISEisC00L
+    export ISE_VERIFY=false
     ```
     Alternatively, keep your environment variables in files in a `.env` or similar folder in your home directory and use `source {filename}` to load environment variables from the files:
 
     ```bash
-    source ~/.env/aws.sh
-    source ~/.env/ise.sh
-    source ~/.env/meraki.sh
+    source ~/.secrets/aws.sh
+    source ~/.secrets/ise.sh
+    source ~/.secrets/meraki.sh
     ```
 
 4. Edit the `vars/main.yaml` and change the `meraki_org_name` to yours. You will want to review the other settings and change them to match your environment:
@@ -84,11 +83,11 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
     ```
 
 6. Due to a Meraki VPN API error, you will need to manually add the vMX Local Network definition in the Meraki Dashboard to advertise the VPC subnet:
-   1. In the [Meraki Dashboard](https://dashboard.meraki.com), view your `ISEinAWS` network
+   1. In the [Meraki Dashboard](https://dashboard.meraki.com), view your `ISE_Meraki_AWS` network
    2. Choose `Security & SD-WAN > Configure > Site-to-Site VPN` and for the Local Networks, **Add a Local Network**:
        | Network        | VPN mode | Subnet          |
        |----------------|----------|-----------------|
-       | ISEinAWS       | Enabled  | `172.31.0.0/16` |
+       | ISE_Meraki_AWS | Enabled  | `172.31.0.0/16` |
     > ⚠ If you cannot ping or SSH to the `Ping` Linux VM this is probably the reason!
 
 7. When ISE is up, you may configure it using the additional playbook :
