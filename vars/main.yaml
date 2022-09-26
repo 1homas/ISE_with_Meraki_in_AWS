@@ -18,6 +18,9 @@ radius_secret: "{{ lookup('env','ISE_RADIUS_SECRET') }}"
 tacacs_secret: "{{ lookup('env','ISE_TACACS_SECRET') }}"
 snmp_secret:   "{{ lookup('env','ISE_SNMP_SECRET') }}"
 
+ssh_keypair_directory: ~/.ssh
+ssh_keypair_name: "{{ project_name }}"
+ssh_keypair_private_key: "{{ ssh_keypair_directory }}/{{ ssh_keypair_name }}"
 
 meraki_org_name: thomas       # your Meraki Organization
 meraki_net_name: "{{ project_name }}"   # Meraki vMX network name
@@ -35,8 +38,6 @@ aws_public_subnet_cidr:  172.31.1.0/24
 aws_private_subnet_cidr: 172.31.2.0/24
 aws_public_access_cidr: 0.0.0.0/0
 
-ssh_keypair_directory: ~/.ssh
-ssh_keypair_name: "{{ project_name }}"
 
 #
 # Linux "Ping" VM
