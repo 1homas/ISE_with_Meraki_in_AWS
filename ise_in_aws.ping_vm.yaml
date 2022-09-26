@@ -39,7 +39,7 @@
   #
   - name: Create Ping_VM
     community.aws.ec2_instance:
-      state: present
+      state: running
       name: "{{ pingvm_name }}"
       region: "{{ aws_region }}"
       vpc_subnet_id: "{{ subnet_private.subnet.id }}"
@@ -63,14 +63,33 @@
         started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
     register: ping_vm
 
-  - name: Show Ping_VM
-    ansible.builtin.debug: var=ping_vm
+  # - name: Show Ping_VM
+  #   ansible.builtin.debug: var=ping_vm
+
+  # - name: Show SSH Commands for Instance
+  #   ansible.builtin.debug:
+  #     msg: |
+  #             .
+  #       ......;;.     ping {{ ping_vm.instances[0].private_ip_address }}
+  #       ::::::;;;;.   ping {{ ping_vm.instances[0].private_ip_address }}
+  #       ::::::;;:'    ssh -i {{ ssh_keypair_private_key }} ec2-user@{{ ping_vm.instances[0].private_ip_address }}
+  #             :'
 
   - name: Show SSH Commands for Instance
     ansible.builtin.debug:
-      msg:
-      - "ping {{ ping_vm.instances[0].private_ip_address }}"
-      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }} ec2-user@{{ ping_vm.instances[0].private_ip_address }}"
+      msg: |
+         
+                 _
+             ,--(_)
+           _/ ;-._\    ping {{ ping_vm.instances[0].public_ip_address }}
+          (_)(   ) )   ping {{ ping_vm.instances[0].private_ip_address }}
+            \ ;-'_/    ssh -i {{ ssh_keypair_private_key }} ec2-user@{{ ping_vm.instances[0].private_ip_address }}
+             `--(_)
+         
+         
+
+  # - "ping {{ ping_vm.instances[0].private_ip_address }}"
+  # - "ssh -i {{ ssh_keypair_private_key }} ec2-user@{{ ping_vm.instances[0].private_ip_address }}"
 
 
 

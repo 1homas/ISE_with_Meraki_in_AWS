@@ -43,7 +43,7 @@
 
 
 
-  - name: Create ISE 3.1 Instance in AWS
+  - name: Create ISE Instance in AWS
     loop: "{{ ise_nodes }}"
     amazon.aws.ec2_instance:
       state: present
@@ -72,11 +72,10 @@
         role: "{{ item.role | default( '') }}"
         personas: "{{ item.personas | default( 'standalone') }}"
       user_data: "hostname={{ item.name | lower }}\nprimarynameserver={{ dns_server | default('208.67.222.222') }}\ndnsdomain={{ domain_name | default('demo.local') }}\nntpserver={{ ntp_server | default('time.nist.gov') }}\ntimezone={{ timezone | default('Etc/UTC') }}\nusername={{ ise_username }}\npassword={{ ise_password }}"
-
     register: instances
 
-  - name: Show ISE Instances
-    ansible.builtin.debug: var=instances
+  # - name: Show ISE Instances
+  #   ansible.builtin.debug: var=instances
 
 
 
@@ -116,11 +115,24 @@
   - name: Show SSH Commands for ISE Instances
     loop: "{{ ise_nodes }}"
     ansible.builtin.debug:
-      msg:
-      - "ping {{ item.private_ip }}"
-      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }} {{ ise_username }}@{{ item.private_ip }}"
-      - "ping {{ item.name }}.{{ domain_name }}"
-      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }} {{ ise_username }}@{{ item.name }}.{{ domain_name }}"
+      msg: |
+         
+                .
+               /|\
+              /|||\
+           @ /|||||\ @   ping {{ item.private_ip }}
+          @  \|/ \|/  @  ssh -i {{ ssh_keypair_private_key }} {{ ise_username }}@{{ item.private_ip }}
+          @           @  ping {{ item.name }}.{{ domain_name }}
+           @.       .@   ssh -i {{ ssh_keypair_private_key }} {{ ise_username }}@{{ item.name }}.{{ domain_name }}
+            `Y@ @ @Y`
+         
+         
+
+
+  # - "ping {{ item.private_ip }}"
+  # - "ssh -i {{ ssh_keypair_private_key }} {{ ise_username }}@{{ item.private_ip }}"
+  # - "ping {{ item.name }}.{{ domain_name }}"
+  # - "ssh -i {{ ssh_keypair_private_key }} {{ ise_username }}@{{ item.name }}.{{ domain_name }}"
 
 
 ...
