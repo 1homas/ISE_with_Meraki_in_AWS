@@ -22,8 +22,8 @@
         state: present
       register: key_pair
 
-    - name: Show key_pair
-      ansible.builtin.debug: var=key_pair
+    # - name: Show key_pair
+    #   ansible.builtin.debug: var=key_pair
 
     - name: Save Private Key Locally
       when: key_pair.changed
