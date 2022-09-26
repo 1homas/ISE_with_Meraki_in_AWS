@@ -1,9 +1,6 @@
 ---
-#
-# Run with `ansible-playbook ise.configuration.yaml`
-#
 - name: ISE Configuration Playbook
-  hosts: localhost
+  hosts: ise
   gather_facts: no
   vars_files:
     vars/main.yaml
@@ -11,6 +8,7 @@
 
 
   - name: Query for ISE instances in project "'{{ project_name }}'"
+    delegate_to: localhost
     community.aws.ec2_instance_info:    # get all by default
       filters:
         instance-state-name: [ 'running' ]
@@ -18,19 +16,16 @@
         "tag:product": "ISE"
     register: instances
 
-  - name: Show instances
-    ansible.builtin.debug: var=instances
+  # - name: Show instances
+  #   ansible.builtin.debug: var=instances
 
-  - name: Show Instances
-    loop: "{{ instances.instances }}"
-    ansible.builtin.debug: 
-      msg:
-      - "{{ item.instance_id }} | {{ item.private_ip_address }}"
+  # - name: Show Instances
+  #   loop: "{{ instances.instances }}"
+  #   ansible.builtin.debug: 
+  #     msg:
+  #     - "{{ item.instance_id }} | {{ item.private_ip_address }}"
 
 
-  #----------------------------------------------------------------------------
-  # Verify ISE is up and APIs are enabled
-  #----------------------------------------------------------------------------
   # ⟁ Wait for ISE Application Server to be available after [re]boot
   - name: Test for ISE Application Server Initialization
     loop: "{{ ise_nodes }}"
@@ -41,29 +36,9 @@
     loop: "{{ ise_nodes }}"
     ansible.builtin.include_tasks: tasks/ise_apis_enabled.yaml
 
-  #
-  # 💡 ⟁ Must update to account for multiple nodes using ise_nodes
-  #
-  # - name: Set Facts for ISE (Version & Patch)
-  #   ansible.builtin.include_tasks: tasks/ise_set_facts.yaml
-
-
-  #----------------------------------------------------------------------------
-  # Internal User(s)
-  #
-  # If you want to use Identity Group Custom Attributes, they must be added
-  # manually in the ISE GUI before adding them via API:
-  #   Administration > Identity Mgmt > Settings > User Custom Attributes
-  #
-  #   Created | Long
-  #   Expired | Long
-  #   Department | String
-  #   Sponsor | String
-  #   Authorization | String
-  #----------------------------------------------------------------------------
 
   - name: Create RADIUS Probes - identity_group and internal_users
-    ansible.builtin.include_tasks: tasks/radius_probes.create.yaml
+    ansible.builtin.include_tasks: tasks/radius_probes.yaml
     tags: 
     - create
     - internal_user
@@ -71,48 +46,13 @@
   - name: Default Demo Users
     block:
     - name: Include Thomas' Default Demo Users
-      ansible.builtin.include_vars: vars/internal_users.thomas.yaml
+      ansible.builtin.include_vars: vars/internal_users.yaml
     - name: Create Internal Users
-      ansible.builtin.include_tasks: tasks/internal_users.create_from_var.yaml
+      loop: "{{ internal_users }}"
+      ansible.builtin.include_tasks: tasks/internal_user.create.yaml
     tags: 
     - create
     - internal_user
-
-
-  #
-  # ⟁ REST ID Store must be enabled *manually* in the ISE GUI.
-  #    There is no API option to enable it yet.
-  #    𑁔 > Administration > Identity Mgmt > Settings > REST ID Store Settings
-  #
-  # ⟁ REST ID Store Groups must be chosen manually in the ISE GUI.
-  #    There are no APIs to select them currently.
-  #    𑁔 > Administration > Identity Mgmt > Settings > Ext ID Sources > REST (ROPC)
-  #
-  # 🛑 Connect to login.microsoftonline.com:443 failed: Connection refused (Connection refused)\
-  #
-  # - name: Create AzureAD Oauth Identity Store
-  #   block:
-  #   - name: Include Azure Credentials
-  #     ansible.builtin.include_vars: 
-  #       dir: vars
-  #       files_matching: "credentials.Azure.*"
-  #     register: result
-  #   - name: debug
-  #     ansible.builtin.debug: var=result
-  #   - name: Create @vanillaise.onmicrosoft.com
-  #     vars:
-  #       - restid_store_name: AzureAD_vanillaise   #  no - or . allowed
-  #       - usernameSuffix: "@vanillaise.onmicrosoft.com"   # must start with `@`
-  #       - restid_store_description: "AzureAD vanillaise"
-  #     ansible.builtin.import_tasks: tasks/rest_id_store.create.yaml
-  #   tags: 
-  #   - create
-  #   - rest_id
-  #   - azure_ad
-  #
-  # 💡 ToDo
-  # - name: 💡 Add vanillaise to Identity Source Sequence
-  #   ansible.builtin.import_tasks: not_implemented.yaml
 
 
   #----------------------------------------------------------------------------
@@ -124,7 +64,8 @@
     - name: Include network_device_groups
       ansible.builtin.include_vars: vars/network_device_groups.yaml
     - name: Create Network Device Groups
-      ansible.builtin.include_tasks: tasks/network_device_groups.create.yaml
+      loop: "{{ network_device_groups }}"
+      ansible.builtin.include_tasks: tasks/network_device_group.create.yaml
     tags: 
     - create
     - network_device
@@ -132,65 +73,36 @@
 
 
   - name: Create network_devices
-    when: provider == "AWS"
     block:
     - name: Include demo network_devices
-      ansible.builtin.include_vars: vars/network_devices.thomas.yaml
+      ansible.builtin.include_vars: vars/network_devices.yaml
     - name: Create demo network_devices
-      ansible.builtin.include_tasks: tasks/network_devices.create.yaml
+      loop: "{{ network_devices }}"
+      ansible.builtin.include_tasks: tasks/network_device.create.yaml
     tags: 
     - create
     - network_device
 
-
-  - name: Create network_devices
-    when: provider == "dCloud"
-    block:
-    - name: Include demo network_devices
-      ansible.builtin.include_vars: vars/network_devices.thomas.dCloud.yaml
-    - name: Create demo network_devices
-      ansible.builtin.include_tasks: tasks/network_devices.create.yaml
-    tags: 
-    - create
-    - network_device
-
-
-  #----------------------------------------------------------------------------
-  # Endpoints
-  #
-  # If you want to use Endpoint Custom Attributes, they must be added
-  # manually in the ISE GUI before adding them via API:
-  #   Administration > Identity Mgmt > Endpoint Custom Attributes
-  #
-  #   Created | Long
-  #   Expired | Long
-  #   Department | String
-  #   Owner | String
-  #   Authorization | String
-  #   iPSK | String
-  #   Manufacturer | String
-  #   Model | String
-  #   OS | String
-  #----------------------------------------------------------------------------
 
   - name: Endpoint Groups
     block:
     - name: Include Endpoint Groups
       ansible.builtin.include_vars: vars/endpoint_groups.yaml
     - name: Create Endpoint Groups
-      ansible.builtin.include_tasks: tasks/endpoint_groups.create_from_var.yaml
+      loop: "{{ endpoint_groups }}"
+      ansible.builtin.include_tasks: tasks/endpoint_group.create.yaml
     tags: 
     - create
     - endpoint
 
 
   - name: Create Endpoints
-    # when: provider == "DevNet"
     block:
     - name: Include Endpoints
       ansible.builtin.include_vars: vars/endpoints.yaml
     - name: Create Endpoints
-      ansible.builtin.include_tasks: tasks/endpoints.create_from_var.yaml
+      loop: "{{ endpoints }}"
+      ansible.builtin.include_tasks: tasks/endpoint.create.yaml
     tags: 
     - create
     - endpoint
