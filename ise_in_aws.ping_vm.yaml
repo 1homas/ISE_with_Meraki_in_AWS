@@ -24,7 +24,7 @@
       tags:
         Name: SG-Ping+SSH
         project: "{{ project_name }}"
-        start_date: "{{ ansible_date_time.date }}"
+        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
     register: sg_ping_ssh
 
   # - name: Show sg_ping_ssh
@@ -34,7 +34,7 @@
 
 
   #
-  #  💡 Must use the community.aws.ec2_instance module which supports the 
+  #  💡 Must use the community.aws.ec2_instance module which supports the
   # `user_data` field for inclusion of the Meraki vMX Authentication Token!
   #
   - name: Create Ping_VM
@@ -60,7 +60,7 @@
       tags:
         Name: "{{ pingvm_name }}"
         project: "{{ project_name }}"
-        start_date: "{{ ansible_date_time.date }}"
+        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
     register: ping_vm
 
   - name: Show Ping_VM
@@ -68,9 +68,9 @@
 
   - name: Show SSH Commands for Instance
     ansible.builtin.debug:
-      msg: 
+      msg:
       - "ping {{ ping_vm.instances[0].private_ip_address }}"
-      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }}.private.pem ec2-user@{{ ping_vm.instances[0].private_ip_address }}"
+      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }} ec2-user@{{ ping_vm.instances[0].private_ip_address }}"
 
 
 
