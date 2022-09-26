@@ -34,7 +34,7 @@
       tags:
         Name: SG-ISE
         project: "{{ project_name }}"
-        # start_date: "{{ ansible_date_time.date }}"
+        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
     register: sg_ise
     tags:
     - sg
@@ -49,8 +49,8 @@
       state: present
       region: "{{ aws_region }}"
       vpc_subnet_id: "{{ subnet_private.subnet.id }}"
-      image_id: "{{ aws_ise_ami }}"
-      instance_type: "{{ item.instance_type | default( aws_ise_instance_type ) }}"
+      image_id: "{{ item.ami }}"
+      instance_type: "{{ item.instance_type }}"
       key_name: "{{ ssh_keypair_name }}"
       network:
         assign_public_ip: yes
@@ -68,10 +68,11 @@
         product: "ISE"
         hostname: "{{ item.name }}"
         project: "{{ project_name }}"
-        start_date: "{{ ansible_date_time.date }}"
+        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
         role: "{{ item.role | default( '') }}"
         personas: "{{ item.personas | default( 'standalone') }}"
-      user_data: "hostname={{ item.name | lower }}\nprimarynameserver={{ ise_dns_server }}\ndnsdomain={{ domain_name }}\nntpserver={{ ise_ntp_server }}\ntimezone={{ ise_timezone }}\nusername={{ ise_username }}\npassword={{ ise_password }}"
+      user_data: "hostname={{ item.name | lower }}\nprimarynameserver={{ dns_server | default('208.67.222.222') }}\ndnsdomain={{ domain_name | default('demo.local') }}\nntpserver={{ ntp_server | default('time.nist.gov') }}\ntimezone={{ timezone | default('Etc/UTC') }}\nusername={{ ise_username }}\npassword={{ ise_password }}"
+
     register: instances
 
   - name: Show ISE Instances
@@ -115,11 +116,11 @@
   - name: Show SSH Commands for ISE Instances
     loop: "{{ ise_nodes }}"
     ansible.builtin.debug:
-      msg: 
+      msg:
       - "ping {{ item.private_ip }}"
-      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }}.private.pem {{ ise_username }}@{{ item.private_ip }}"
+      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }} {{ ise_username }}@{{ item.private_ip }}"
       - "ping {{ item.name }}.{{ domain_name }}"
-      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }}.private.pem {{ ise_username }}@{{ item.name }}.{{ domain_name }}"
+      - "ssh -i {{ ssh_keypair_directory}}/{{ ssh_keypair_name }} {{ ise_username }}@{{ item.name }}.{{ domain_name }}"
 
 
 ...
