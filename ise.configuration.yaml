@@ -1,26 +1,26 @@
 ---
-# - name: ISE Configuration Playbook
-#   hosts: ise
-#   gather_facts: no
-#   vars_files:
-#     vars/main.yaml
-#   tasks:
+- name: ISE Configuration Playbook
+  hosts: ise
+  gather_facts: no
+  vars_files:
+    - vars/main.yaml
+  tasks:
 
 
   # ⟁ Wait for ISE Application Server to be available after [re]boot
   - name: Test for ISE Application Server Initialization
-    loop: "{{ ise_nodes }}"
+    # loop: "{{ ise_nodes }}"
     ansible.builtin.include_tasks: tasks/ise_initialized.yaml
 
   # ⟁ Verify APIs are enabled *before* gathering facts and configuring
   - name: Enable ISE ERS & OpenAPIs
-    loop: "{{ ise_nodes }}"
+    # loop: "{{ ise_nodes }}"
     ansible.builtin.include_tasks: tasks/ise_apis_enabled.yaml
 
 
   - name: Create RADIUS Probes - identity_group and internal_users
     ansible.builtin.include_tasks: tasks/radius_probes.yaml
-    tags: 
+    tags:
     - create
     - internal_user
 
@@ -31,7 +31,7 @@
     - name: Create Internal Users
       loop: "{{ internal_users }}"
       ansible.builtin.include_tasks: tasks/internal_user.create.yaml
-    tags: 
+    tags:
     - create
     - internal_user
 
@@ -47,22 +47,89 @@
     - name: Create Network Device Groups
       loop: "{{ network_device_groups }}"
       ansible.builtin.include_tasks: tasks/network_device_group.create.yaml
-    tags: 
+    tags:
     - create
     - network_device
     - network_device_group
 
 
-  - name: Create network_devices
-    block:
-    - name: Include demo network_devices
-      ansible.builtin.include_vars: vars/network_devices.yaml
-    - name: Create demo network_devices
-      loop: "{{ network_devices }}"
-      ansible.builtin.include_tasks: tasks/network_device.create.yaml
-    tags: 
-    - create
-    - network_device
+  # - name: Create network_devices
+  #   block:
+  #   - name: Include demo network_devices
+  #     ansible.builtin.include_vars: vars/network_devices.yaml
+  #   - name: Create demo network_devices
+  #     loop: "{{ network_devices }}"
+  #     ansible.builtin.include_tasks: tasks/network_device.create.yaml
+  #   tags:
+  #   - create
+  #   - network_device
+
+  - name: Get All Meraki Devices in the Org+Network
+    delegate_to: localhost
+    cisco.meraki.meraki_device:
+      state: query
+      org_name: "{{ meraki_org_name }}"
+      net_name: "{{ meraki_lab_net_name }}"
+    register: meraki_devices
+    #---------------------------------------------------
+    # Example output
+    #---------------------------------------------------
+    # - configuration_updated_at: '2022-09-21T22:14:34Z'
+    #   firmware: wireless-28-7-1
+    #   lan_ip: 192.168.101.4
+    #   lat: 37.0000000000000
+    #   lng: -122.0000000000000
+    #   mac: 2c:3f:0b:56:e3:6c
+    #   model: MR46
+    #   name: lab-mr46-1
+    #   network_id: L_585467371558187322
+    #   notes: ''
+    #   product_type: wireless
+    #   serial: Q3AC-JCYG-3NL5
+    #---------------------------------------------------
+
+  # - name: Show meraki_devices
+  #   ansible.builtin.debug: var=meraki_devices
+
+  #
+  # Add Meraki Devices to ISE
+  #
+  - name: Add Meraki Network Devices to ISE
+    delegate_to: localhost
+    loop: "{{ meraki_devices.data }}"
+    when: item.lan_ip is defined        # APs and Switches
+    cisco.ise.network_device:
+      ise_hostname: "{{ ansible_host }}"
+      ise_username: "{{ ise_username }}"
+      ise_password: "{{ ise_password }}"
+      ise_verify:   "{{ ise_verify }}"
+      ise_debug:    "{{ ise_debug }}"
+      state:        "{{ item.state | default('present') }}"          # string
+      name:         "{{ item.name }}"                                # string
+      description:  "{{ item.firmware | default('')}}"            # string
+      profileName:  "{{ item.profileName | default('Cisco') }}"      # string
+      modelName:    "{{ item.modelName | default( omit ) }}"                    # string
+      softwareVersion: "{{ item.softwareVersion | default( omit ) }}"          # string
+      NetworkDeviceIPList:
+      - ipaddress: "{{ item.lan_ip }}"
+        mask: 32
+      NetworkDeviceGroupList: "{{ item.network_device_groups | default( omit ) }}"  # list of strings
+      authenticationSettings:
+        # enabled: true
+        # RADIUS UDP Settings
+        networkProtocol: RADIUS
+        radiusSharedSecret: "{{ radius_secret }}"
+        # enableMultiSecret:  "{{ item.enableMultiSecret | default('false') }}" # ⚠ string, not boolean!
+        # secondRadiusSharedSecret: "{{ item.secondRadiusSharedSecret | default( omit ) }}"
+        # RADIUS DTLS Settings
+        # dtlsRequired:  "{{ item.dtlsRequired | default( false ) }}"
+        # General Settings
+        # enableKeyWrap:    "{{ item.enableKeyWrap | default( false ) }}"
+        # keyEncryptionKey: "{{ item.keyEncryptionKey | default( omit ) }}" # string
+        # messageAuthenticatorCodeKey: "{{ item.keyInputFormat | default( omit ) }}" # string
+        # keyInputFormat: "{{ item.keyInputFormat | default( omit ) }}"    # [ 'ASCII', 'HEXADECIMAL' ]
+      coaPort:     "{{ item.coaPort | default(1700) }}"             # string
+      # dtlsDnsName: "{{ item.dtlsDnsName | default( omit ) }}"                  # string
 
 
   - name: Endpoint Groups
@@ -72,7 +139,7 @@
     - name: Create Endpoint Groups
       loop: "{{ endpoint_groups }}"
       ansible.builtin.include_tasks: tasks/endpoint_group.create.yaml
-    tags: 
+    tags:
     - create
     - endpoint
 
@@ -84,9 +151,10 @@
     - name: Create Endpoints
       loop: "{{ endpoints }}"
       ansible.builtin.include_tasks: tasks/endpoint.create.yaml
-    tags: 
+    tags:
     - create
     - endpoint
+
 
 
 
