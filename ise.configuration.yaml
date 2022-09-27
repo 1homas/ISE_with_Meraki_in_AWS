@@ -1,20 +1,12 @@
 ---
-- name: ISE Configuration Playbook
-  hosts: ise
-  gather_facts: no
-  vars_files:
-    - vars/main.yaml
-  tasks:
 
 
   # ⟁ Wait for ISE Application Server to be available after [re]boot
   - name: Test for ISE Application Server Initialization
-    # loop: "{{ ise_nodes }}"
     ansible.builtin.include_tasks: tasks/ise_initialized.yaml
 
   # ⟁ Verify APIs are enabled *before* gathering facts and configuring
   - name: Enable ISE ERS & OpenAPIs
-    # loop: "{{ ise_nodes }}"
     ansible.builtin.include_tasks: tasks/ise_apis_enabled.yaml
 
 
@@ -104,32 +96,20 @@
       ise_password: "{{ ise_password }}"
       ise_verify:   "{{ ise_verify }}"
       ise_debug:    "{{ ise_debug }}"
-      state:        "{{ item.state | default('present') }}"          # string
-      name:         "{{ item.name }}"                                # string
-      description:  "{{ item.firmware | default('')}}"            # string
-      profileName:  "{{ item.profileName | default('Cisco') }}"      # string
-      modelName:    "{{ item.modelName | default( omit ) }}"                    # string
-      softwareVersion: "{{ item.softwareVersion | default( omit ) }}"          # string
+      state:        "{{ item.state | default('present') }}"            # string
+      name:         "{{ item.name }}"                                  # string
+      description:  "{{ item.firmware | default('')}}"                 # string
+      profileName:  "{{ item.profileName | default('Cisco') }}"        # string
+      modelName:    "{{ item.modelName | default( omit ) }}"           # string
+      softwareVersion: "{{ item.softwareVersion | default( omit ) }}"  # string
       NetworkDeviceIPList:
       - ipaddress: "{{ item.lan_ip }}"
         mask: 32
       NetworkDeviceGroupList: "{{ item.network_device_groups | default( omit ) }}"  # list of strings
       authenticationSettings:
-        # enabled: true
-        # RADIUS UDP Settings
         networkProtocol: RADIUS
         radiusSharedSecret: "{{ radius_secret }}"
-        # enableMultiSecret:  "{{ item.enableMultiSecret | default('false') }}" # ⚠ string, not boolean!
-        # secondRadiusSharedSecret: "{{ item.secondRadiusSharedSecret | default( omit ) }}"
-        # RADIUS DTLS Settings
-        # dtlsRequired:  "{{ item.dtlsRequired | default( false ) }}"
-        # General Settings
-        # enableKeyWrap:    "{{ item.enableKeyWrap | default( false ) }}"
-        # keyEncryptionKey: "{{ item.keyEncryptionKey | default( omit ) }}" # string
-        # messageAuthenticatorCodeKey: "{{ item.keyInputFormat | default( omit ) }}" # string
-        # keyInputFormat: "{{ item.keyInputFormat | default( omit ) }}"    # [ 'ASCII', 'HEXADECIMAL' ]
-      coaPort:     "{{ item.coaPort | default(1700) }}"             # string
-      # dtlsDnsName: "{{ item.dtlsDnsName | default( omit ) }}"                  # string
+      coaPort:     "{{ item.coaPort | default(1700) }}"                # string
 
 
   - name: Endpoint Groups
