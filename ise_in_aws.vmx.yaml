@@ -10,10 +10,10 @@
   #
   # Timezones: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
   #
-  - name: Create a vMX Network '{{ meraki_org_name }}:{{ meraki_net_name }}'
+  - name: Create a vMX Network '{{ meraki_org_name }}:{{ meraki_vmx_net_name }}'
     cisco.meraki.meraki_network:
       org_name: "{{ meraki_org_name }}"
-      net_name: "{{ meraki_net_name }}"
+      net_name: "{{ meraki_vmx_net_name }}"
       state: present
       type: appliance
       timezone: America/Los_Angeles
@@ -79,7 +79,7 @@
       ansible.builtin.pause:
         prompt: |
           Generate the vMX Authentication Token :
-          - In the Meraki Dashboard, select the network '{{ meraki_org_name }}:{{ meraki_net_name }}'
+          - In the Meraki Dashboard, select the network '{{ meraki_org_name }}:{{ meraki_vmx_net_name }}'
           - Add a vMX device if needed
           - Navigate to Security & SDWAN > Monitor > Appliance Status
           - Scroll down and select Generate authentication token...
@@ -158,6 +158,7 @@
 
 
   - name: Add public DNS entry for the vMX
+    when: domain_name is defined
     community.aws.route53:
       state: present
       zone: "{{ domain_name }}"
@@ -170,6 +171,7 @@
       wait: no
 
   - name: Add private DNS entry for the vMX
+    when: domain_name is defined
     community.aws.route53:
       state: present
       zone: "{{ domain_name }}"
@@ -228,7 +230,7 @@
   - name: Set vMX to VPN Spoke mode to Lab Hub
     cisco.meraki.meraki_site_to_site_vpn:
       org_name: "{{ meraki_org_name }}"
-      net_name: "{{ meraki_net_name }}"
+      net_name: "{{ meraki_vmx_net_name }}"
       state: present
       mode: spoke     # use `spoke` to avoid AWS $$$ for outbound `hub` traffic
       hubs:

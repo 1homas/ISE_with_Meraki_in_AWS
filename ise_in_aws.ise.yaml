@@ -41,8 +41,6 @@
     - security_group
 
 
-
-
   - name: Create ISE Instance in AWS
     loop: "{{ ise_nodes }}"
     amazon.aws.ec2_instance:
@@ -78,12 +76,11 @@
   #   ansible.builtin.debug: var=instances
 
 
-
-
   #
   # Advertise the same internal IP for public and private DNS
   #
   - name: Add public DNS entry for the ISE node(s)
+    when: domain_name is defined
     loop: "{{ ise_nodes }}"
     community.aws.route53:
       state: present
@@ -97,6 +94,7 @@
       wait: no
 
   - name: Add private DNS entry for the ISE node(s)
+    when: domain_name is defined
     loop: "{{ ise_nodes }}"
     community.aws.route53:
       state: present
@@ -110,8 +108,6 @@
       wait: no
 
 
-
-
   - name: Show SSH Commands for ISE Instances
     loop: "{{ ise_nodes }}"
     ansible.builtin.debug:
@@ -120,19 +116,13 @@
                 .
                /|\
               /|||\
-           @ /|||||\ @   ping {{ item.private_ip }}
-          @  \|/ \|/  @  ssh -i {{ ssh_keypair_private_key }} {{ ise_username }}@{{ item.private_ip }}
-          @           @  ping {{ item.name }}.{{ domain_name }}
-           @.       .@   ssh -i {{ ssh_keypair_private_key }} {{ ise_username }}@{{ item.name }}.{{ domain_name }}
+           @ /|||||\ @
+          @  \|/ \|/  @   ping {{ item.private_ip }}
+          @           @   ssh -i {{ ssh_keypair_private_key }} {{ ise_username }}@{{ item.private_ip }}
+           @.       .@
             `Y@ @ @Y`
          
          
-
-
-  # - "ping {{ item.private_ip }}"
-  # - "ssh -i {{ ssh_keypair_private_key }} {{ ise_username }}@{{ item.private_ip }}"
-  # - "ping {{ item.name }}.{{ domain_name }}"
-  # - "ssh -i {{ ssh_keypair_private_key }} {{ ise_username }}@{{ item.name }}.{{ domain_name }}"
 
 
 ...

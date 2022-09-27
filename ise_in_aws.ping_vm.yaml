@@ -31,8 +31,6 @@
   #   ansible.builtin.debug: var=sg_ping_ssh
 
 
-
-
   #
   #  💡 Must use the community.aws.ec2_instance module which supports the
   # `user_data` field for inclusion of the Meraki vMX Authentication Token!
@@ -76,16 +74,12 @@
          
          
 
-  # - "ping {{ ping_vm.instances[0].private_ip_address }}"
-  # - "ssh -i {{ ssh_keypair_private_key }} ec2-user@{{ ping_vm.instances[0].private_ip_address }}"
-
-
-
 
   #
   # Advertise the same internal IP for public and private DNS
   #
   - name: Add public DNS entry for the PingVM
+    when: domain_name is defined
     community.aws.route53:
       state: present
       zone: "{{ domain_name }}"
@@ -98,6 +92,7 @@
       wait: no
 
   - name: Add private DNS entry for the PingVM
+    when: domain_name is defined
     community.aws.route53:
       state: present
       zone: "{{ domain_name }}"
