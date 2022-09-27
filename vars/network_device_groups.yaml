@@ -127,9 +127,9 @@ network_device_groups:
   description: Cisco Meraki MS
   othername: Device Type
 
-- name: Device Type#All Device Types#Switches#MS#MS120
-  description: Cisco Meraki MS390
-  othername: Device Type
+# - name: Device Type#All Device Types#Switches#MS#MS120
+#   description: Cisco Meraki MS390
+#   othername: Device Type
 
 - name: Device Type#All Device Types#Switches#MS#MS390
   description: Cisco Meraki MS390
@@ -160,13 +160,13 @@ network_device_groups:
   description: Cisco Meraki vMX
   othername: Device Type
 
-- name: Device Type#All Device Types#SDWAN#Z
-  description: Cisco Meraki vMX
-  othername: Device Type
+# - name: Device Type#All Device Types#SDWAN#Z
+#   description: Cisco Meraki vMX
+#   othername: Device Type
 
-- name: Device Type#All Device Types#SDWAN#Z#Z3
-  description: Cisco Meraki vMX
-  othername: Device Type
+# - name: Device Type#All Device Types#SDWAN#Z#Z3
+#   description: Cisco Meraki vMX
+#   othername: Device Type
 
 
 #------------------------------------------------------------------------------
