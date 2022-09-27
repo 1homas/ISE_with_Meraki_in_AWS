@@ -16,7 +16,7 @@ You will need at least one additional Meraki MX or Z network to act as a VPN hub
 
 Running `ansible-playbook ise_in_aws.yaml` will create :
 - AWS VPC, subnets, route tables, internet gateway. For the gory details, see **Manual Configuration in AWS Console and Meraki Dashboard** below.
-- ISE 3.1 instance
+- ISE 3.1 or later instance
 - Meraki vMX instance to secure RADIUS traffic from network devices to ISE
 - Linux VM instance to ping while ISE boots so you will feel confident that the VPN is going to work! You could also turn this into a web server for testing URL redirections or as an internal site that you block.
 
@@ -62,7 +62,7 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
     export ISE_VERIFY=false
     ```
 
-    Alternatively, keep your environment variables in files in a `.env` or similar folder in your home directory and use `source {filename}` to load environment variables from the files:
+    Alternatively, keep your environment variables in files in a `.secrets` or similar folder in your home directory and use `source {filename}` to load environment variables from the files:
 
     ```bash
     source ~/.secrets/aws.sh
