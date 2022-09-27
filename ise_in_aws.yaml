@@ -4,7 +4,7 @@
 #------------------------------------------------------------------------------
 
 
-- name: AWS VPC with Cisco ISE and Meraki vMX 
+- name: Provision AWS VPC with Cisco ISE and Meraki vMX 
   hosts: localhost
   gather_facts: no
   vars_files:
@@ -27,6 +27,9 @@
   - name: Create PingVM
     ansible.builtin.include_tasks: ise_in_aws.ping_vm.yaml
 
+  - name: Create Meraki MR SSIDs
+    ansible.builtin.include_tasks: ise_in_aws.mr_ssids.yaml
+
   - name: Refresh AWS Inventory to get the new Instance(s)
     ansible.builtin.meta: refresh_inventory
 
@@ -39,11 +42,9 @@
   tasks:
 
   - name: Wait for ISE Application Server Initialization
-    loop: "{{ ise_nodes }}"
     ansible.builtin.include_tasks: tasks/ise_initialized.yaml
 
   - name: Configure ISE
     ansible.builtin.include_tasks: ise.configuration.yaml
-
 
 ...
