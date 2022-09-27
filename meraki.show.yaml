@@ -1,16 +1,16 @@
 ---
 #------------------------------------------------------------------------------
 # Ansible_Meraki_Show
-# 
+#
 # Shows basic Cisco Meraki information
 #  * organization(s)
 #  * admin(s)
 #  * network(s)
 #  * device(s)
-# 
+#
 # Assumes MERAKI_KEY environment variable for API authentication:
 #    export MERAKI_KEY='EXAMPLE+KEYc320e12ee407159487a4cabc41abb'
-# 
+#
 # Run with `ansible-playbook meraki.show.yaml`
 #
 #------------------------------------------------------------------------------
@@ -34,7 +34,7 @@
   - name: Set admin emails
     vars:
       query: "[*].email"
-    ansible.builtin.set_fact: 
+    ansible.builtin.set_fact:
       admin_emails: "{{ admins.data | community.general.json_query(query) }}"
 
   # - name: Show administrators' email addresses
@@ -52,7 +52,7 @@
   - name: Set org_names
     vars:
       query: "[*].name"
-    ansible.builtin.set_fact: 
+    ansible.builtin.set_fact:
       org_names: "{{ orgs.data | community.general.json_query(query) }}"
 
   - name: Show Org Names
@@ -71,7 +71,7 @@
   - name: Set network_names
     vars:
       query: "[*].name"
-    ansible.builtin.set_fact: 
+    ansible.builtin.set_fact:
       network_names: "{{ networks.data | community.general.json_query(query) }}"
 
   - name: Show network_names
@@ -86,7 +86,7 @@
       state: query
       # query parameters:
       org_name: "{{ meraki_org_name }}"
-      # net_name: "{{ meraki_net_name }}"
+      # net_name: "{{ meraki_vmx_net_name }}"
       # hostname: main-switch
       # model: main-switch
       # serial: abc123
@@ -98,7 +98,7 @@
   - name: Set device_names
     vars:
       query: "[*].serial"
-    ansible.builtin.set_fact: 
+    ansible.builtin.set_fact:
       serials: "{{ devices.data | community.general.json_query(query) }}"
 
   - name: Show device serial numbers
@@ -110,7 +110,7 @@
   - name: Set device_ips
     vars:
       query: "[*].lan_ip"
-    ansible.builtin.set_fact: 
+    ansible.builtin.set_fact:
       device_ips: "{{ devices.data | community.general.json_query(query) }}"
 
   - name: Show device_ips
@@ -120,7 +120,7 @@
   - name: Set device_models
     vars:
       query: "[*].model"
-    ansible.builtin.set_fact: 
+    ansible.builtin.set_fact:
       device_models: "{{ devices.data | community.general.json_query(query) }}"
 
   - name: Show device_models
@@ -132,7 +132,7 @@
   - name: Query for Site-to-Site VPNs
     cisco.meraki.meraki_site_to_site_vpn:
       org_name: "{{ meraki_org_name }}"
-      net_name: "{{ meraki_net_name }}"
+      net_name: "{{ meraki_vmx_net_name }}"
       state: query
     register: vpns
 
