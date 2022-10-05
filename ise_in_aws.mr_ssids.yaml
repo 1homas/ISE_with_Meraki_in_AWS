@@ -144,7 +144,7 @@
       enabled: yes
       visible: yes
       auth_mode: 8021x-radius         # [open|psk|open-with-radius|8021x-meraki|8021x-radius]
-      encryption_mode: wpa-eap        # [wpa|eap|wpa-eap]
+      encryption_mode: wpa            # [wpa|eap|wpa-eap]
       wpa_encryption_mode: WPA2 only  # [ WPA2 only|WPA1 and WPA2|WPA3 Only|WPA3 Transition Mode]
       splash_page: None
       radius_servers:
