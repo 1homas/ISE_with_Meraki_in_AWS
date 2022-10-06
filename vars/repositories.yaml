@@ -4,7 +4,7 @@
 repositories:
 
 - name: FTP
-  serverName: "{{ ISE_BACKUP_REPOSITORY }}"
+  serverName: "{{ lookup('env', 'ISE_BACKUP_REPOSITORY') }}"
   protocol: FTP
   path: /
   userName: "{{ lookup('env', 'ISE_BACKUP_USERNAME') }}"
