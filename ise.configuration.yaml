@@ -9,8 +9,12 @@
   - name: Enable ISE ERS & OpenAPIs
     ansible.builtin.include_tasks: tasks/ise_apis_enabled.yaml
 
+  - name: Include Repositories
+    ansible.builtin.include_vars: vars/repositories.yaml
+    tags:
+    - repository
 
-  - name: Add Repositories to ISE
+  - name: Create Repositories
     when: repositories is defined and repositories | count > 0
     loop: "{{ repositories }}"
     ansible.builtin.include_tasks: tasks/repository.create.yaml
@@ -22,9 +26,9 @@
     tags:
     - internal_user
 
-  - name: Default Demo Users
+  - name: Create Internal Users
     block:
-    - name: Include Thomas' Default Demo Users
+    - name: Include Internal Users
       ansible.builtin.include_vars: vars/internal_users.yaml
     - name: Create Internal Users
       loop: "{{ internal_users }}"
@@ -55,15 +59,16 @@
   #   - network_device_group
 
 
-  # - name: Create network_devices
-  #   block:
-  #   - name: Include demo network_devices
-  #     ansible.builtin.include_vars: vars/network_devices.yaml
-  #   - name: Create demo network_devices
-  #     loop: "{{ network_devices }}"
-  #     ansible.builtin.include_tasks: tasks/network_device.create.yaml
-  #   tags:
-  #   - network_device
+  - name: Create network_devices
+    block:
+    - name: Include demo network_devices
+      ansible.builtin.include_vars: vars/network_devices.yaml
+    - name: Create network_devices
+      when: network_devices is defined and network_devices | count > 0
+      loop: "{{ network_devices }}"
+      ansible.builtin.include_tasks: tasks/network_device.create.yaml
+    tags:
+    - network_device
 
   - name: Get All Meraki Devices in the Org+Network
     delegate_to: localhost
@@ -105,20 +110,20 @@
       ise_password: "{{ ise_password }}"
       ise_verify:   "{{ ise_verify }}"
       ise_debug:    "{{ ise_debug }}"
-      state:        "{{ item.state | default('present') }}"            # string
-      name:         "{{ item.name }}"                                  # string
-      description:  "{{ item.firmware | default('')}}"                 # string
-      profileName:  "{{ item.profileName | default('Cisco') }}"        # string
-      modelName:    "{{ item.modelName | default( omit ) }}"           # string
-      softwareVersion: "{{ item.softwareVersion | default( omit ) }}"  # string
+      state:        "{{ item.state | default('present') }}"
+      name:         "{{ item.name }}"
+      description:  "{{ item.firmware | default('')}}"
+      profileName:  "{{ item.profileName | default('Cisco') }}"
+      modelName:    "{{ item.modelName | default( omit ) }}"
+      softwareVersion: "{{ item.softwareVersion | default( omit ) }}"
       NetworkDeviceIPList:
       - ipaddress: "{{ item.lan_ip }}"
         mask: 32
-      NetworkDeviceGroupList: "{{ item.network_device_groups | default( omit ) }}"  # list of strings
+      NetworkDeviceGroupList: "{{ item.network_device_groups | default( omit ) }}"
       authenticationSettings:
         networkProtocol: RADIUS
         radiusSharedSecret: "{{ radius_secret }}"
-      coaPort:     "{{ item.coaPort | default(1700) }}"                # string
+      coaPort:     "{{ item.coaPort | default(1700) }}"
 
 
   - name: Endpoint Groups
