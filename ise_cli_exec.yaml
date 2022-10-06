@@ -1,0 +1,55 @@
+---
+#------------------------------------------------------------------------------
+# Example commands:
+# ✅ show version
+# ✅ show application status ise
+# 🛑 show logging system ade/ADE.log | include patch   # patch progress
+# 🛑 application reset-passwd ise {{ username }}
+# 🛑 configure terminal
+# 🛑   service cache enable hosts ttl 300              # enable DNS caching
+#
+# ISE uses the network_cli Connection Plugin:
+#   https://docs.ansible.com/ansible/2.9/plugins/connection/network_cli.html
+#
+# ISE SSH CLI commands uses the cisco.ios Platform Options.
+# For details, see
+# https://docs.ansible.com/ansible/latest/network/user_guide/platform_ios.html
+#
+#   network_os: ?  # configures the device platform network operating system
+#   password: "{{ ansible_password }}"  # ansible_password, ansible_ssh_pass, ansible_ssh_password
+#   port: 22
+#   private_key_file: "{{ ansible_private_key_file }}"
+#   remote_user: "{{ ansible_user  }}"
+#   terminal_initial_prompt: <list>  # single or sequence of prompt patterns to evaluate on initial login
+#   terminal_initial_answer:
+#   terminal_inital_prompt_newline: yes
+#------------------------------------------------------------------------------
+
+- name: ISE CLI Command
+  hosts: ise
+  gather_facts: no
+  vars_files:
+  - vars/main.yaml
+  tasks:
+
+  - name: ISE CLI Command | {{ cmd }}
+    vars:
+      ansible_connection: ansible.netcommon.network_cli
+      ansible_network_os: cisco.ios.ios
+      ansible_ssh_user: "{{ lookup('env','ISE_USERNAME') }}"
+      ansible_ssh_private_key_file: "{{ ssh_keypair_private_key }}"
+      ansible_become: no
+      cmd: "{{ lookup('env','cmd') | default('show version', true) }}"
+    cisco.ios.ios_command:
+      commands:
+      - "{{ cmd }}"
+      - exit    # 💡 Always `exit` after commands to prevent hanging sessions
+    register: out
+
+  - name: Output | {{ cmd }}
+    when: out is defined and out.stdout | count > 0
+    ansible.builtin.debug:
+      msg:
+      - "{{ out.stdout | replace('\\n\\n','\\n') }}"
+
+...
