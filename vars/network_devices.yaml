@@ -3,7 +3,7 @@
 # Network Devices
 #
 
-network_devices:
+network_devices: []
 
 #------------------------------------------------------------------------------
 # Cisco Catalyst WLCs
