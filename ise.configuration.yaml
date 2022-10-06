@@ -10,10 +10,16 @@
     ansible.builtin.include_tasks: tasks/ise_apis_enabled.yaml
 
 
+  - name: Add Repositories to ISE
+    when: repositories is defined and repositories | count > 0
+    loop: "{{ repositories }}"
+    ansible.builtin.include_tasks: tasks/repository.create.yaml
+    tags:
+    - repository
+
   - name: Create RADIUS Probes - identity_group and internal_users
     ansible.builtin.include_tasks: tasks/radius_probes.yaml
     tags:
-    - create
     - internal_user
 
   - name: Default Demo Users
@@ -24,7 +30,6 @@
       loop: "{{ internal_users }}"
       ansible.builtin.include_tasks: tasks/internal_user.create.yaml
     tags:
-    - create
     - internal_user
 
 
@@ -46,7 +51,6 @@
   #     loop: "{{ network_device_groups }}"
   #     ansible.builtin.include_tasks: tasks/network_device_group.create.yaml
   #   tags:
-  #   - create
   #   - network_device
   #   - network_device_group
 
@@ -59,7 +63,6 @@
   #     loop: "{{ network_devices }}"
   #     ansible.builtin.include_tasks: tasks/network_device.create.yaml
   #   tags:
-  #   - create
   #   - network_device
 
   - name: Get All Meraki Devices in the Org+Network
@@ -126,7 +129,6 @@
       loop: "{{ endpoint_groups }}"
       ansible.builtin.include_tasks: tasks/endpoint_group.create.yaml
     tags:
-    - create
     - endpoint
 
 
@@ -138,7 +140,6 @@
       loop: "{{ endpoints }}"
       ansible.builtin.include_tasks: tasks/endpoint.create.yaml
     tags:
-    - create
     - endpoint
 
 
