@@ -3,6 +3,8 @@
 # Test for ISE Application Server Initialization
 #
 
+  - ansible.builtin.debug: var=ansible_host
+
 
   - name: Wait for ISE App Server (GUI) | {{ inventory_hostname }}
     delegate_to: localhost
@@ -17,28 +19,6 @@
     until: result.status == 200
     retries: 1000
     delay: 10
-
-  - name: ISE ({{ inventory_hostname }}) is Ready!
-    when: result.status == 200
-    ansible.builtin.pause:
-      seconds: 1
-      prompt: |
-                         .
-                        /|\
-                       /|||\
-                      /|||||\
-               @@    /|||||||\    @@
-             @@     /|||||||||\     @@
-            @@     /|||||||||||\     @@
-           @@      \||/     \||/      @@
-          /@        _  ___  ___        @\
-          @@       | |/ __|/ __|       @@
-          \@       | |\__ \| _|        @/
-           @@      |_||___/\___|      @@
-             @@                     @@
-               @@,_             _,@@
-                 ^^Y@@@@@@@@@@@Y^^
-         
 
 
 ...
