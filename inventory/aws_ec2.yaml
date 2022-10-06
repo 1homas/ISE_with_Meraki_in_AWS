@@ -55,9 +55,9 @@ keyed_groups:
 # - key: tags
 #   prefix: tag
 #   separator: '_'
-- key: tags.Name
-  # prefix: name_
-  separator: ''
+# - key: tags.Name
+#   # prefix: name_
+#   separator: ''
 - key: tags.product   # or tags['product']
   prefix: product
   separator: '_'
