@@ -32,17 +32,23 @@
   # Network Device Groups
   #----------------------------------------------------------------------------
 
-  - name: Create network_device_groups
-    block:
-    - name: Include network_device_groups
-      ansible.builtin.include_vars: vars/network_device_groups.yaml
-    - name: Create Network Device Groups
-      loop: "{{ network_device_groups }}"
-      ansible.builtin.include_tasks: tasks/network_device_group.create.yaml
-    tags:
-    - create
-    - network_device
-    - network_device_group
+  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  # 🐞 ISE 3.2.0.542 `networkdevicegroup` create fails.
+  # 🐞 It does not support the `othername` attribute.
+  # 🐞 It says it wants the `ndgtype` attribute that it does not recognize
+  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  # - name: Create network_device_groups
+  #   block:
+  #   - name: Include network_device_groups
+  #     ansible.builtin.include_vars: vars/network_device_groups.yaml
+  #   - name: Create Network Device Groups
+  #     loop: "{{ network_device_groups }}"
+  #     ansible.builtin.include_tasks: tasks/network_device_group.create.yaml
+  #   tags:
+  #   - create
+  #   - network_device
+  #   - network_device_group
 
 
   # - name: Create network_devices
