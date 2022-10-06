@@ -1,5 +1,5 @@
 ---
-#
+#------------------------------------------------------------------------------
 # Terminate AWS EC2 Instances for a tagged project:
 #   - Terminate all EC2 instances
 #   - Delete Subnets
@@ -7,164 +7,330 @@
 #   - Delete Internet Gateway
 #   - Delete Security Groups in VPC
 #   - Delete VPCs
-#   - Delete public_key
-#   - Delete private_key.pem
+#   - Delete private key
 #   - TODO: Delete Route53 records
 #   - TODO: Delete S3 Buckets
-# Run: `ansible-playbook ise_in_aws.terminate.yaml`
 #
+# Run: `ansible-playbook ise_in_aws.terminate.yaml`
+#------------------------------------------------------------------------------
 
 
-- name: Terminate AWS EC2 Instances for project:"{{ project_name }}"
+- name: Destroy All Resources for project:"{{ project_name }}"
   hosts: localhost
-  vars_files:
-    - vars/main.yaml
-  vars_prompt:
-    - name: project_name
-      prompt: Project Name
-      default: "{{ project_name }}"
-      private: no
+  gather_facts: no
+  vars_files: vars/main.yaml
   tasks:
 
+  #----------------------------------------------------------------------------
+  # Confirm Project!
+  #----------------------------------------------------------------------------
 
-  - name: Get all EC2 Instances with tag project:"{{ project_name }}"
-    community.aws.ec2_instance_info:    # get all by default
+  - name: Prompt for Project to Delete
+    ansible.builtin.pause:
+      prompt: "Project Name [{{ project_name | default('') }}]"
+    register: result
+
+  # - ansible.builtin.debug: var=result.user_input
+
+  - name: Set Project Name
+    when: result.user_input is defined and result.user_input | length > 0
+    ansible.builtin.set_fact:
+      project_name: "{{ result.user_input | trim }}"
+
+  # - ansible.builtin.debug: var=project_name
+
+  #----------------------------------------------------------------------------
+  # Get All Resources
+  #----------------------------------------------------------------------------
+
+  - name: Get All EC2 Instances with tag project:"{{ project_name }}"
+    amazon.aws.ec2_instance_info:    # Get All by default
       filters:
-        instance-state-name: running
+        instance-state-name:
+        - rebooted    # convenience alias for state=stopped immediately followed by state=running
+        - restarted   # convenience alias for state=stopped immediately followed by state=started
+        - running     # state=present + ensures the instances are running
+        - started     # state=running + waits for EC2 status checks to report OK if wait=true
+        - stopped     # ensures an existing instance is stopped.
+        - present     # instances exist, but does not guarantee any state (e.g. running)
+        # - terminated  # ensures an existing instance is terminated.
+        # - absent      # alias for state=terminated
         "tag:project": "{{ project_name }}"
-    register: instances
+    register: ec2_instances
 
-  # - name: Show instances
-  #   ansible.builtin.debug: var=instances
+  # - ansible.builtin.debug: var=ec2_instances
 
-  - name: Terminate all EC2 instances with tag project:"{{ project_name }}"
-    community.aws.ec2_instance:
-      state: absent
-      wait: yes
-      filters:
-        # instance-state-name: [ "running" ]
-        "tag:project": "{{ project_name }}"
-
-
-  # - name: Terminate
-  #   loop: "{{instances.instances}}"
-  #   amazon.aws.ec2:
-  #     instance_ids: "{{item.instance_id}}"
-  #     state: absent
-  #     # wait: yes
-
-
-  - name: Get all VPCs with tag project:"{{ project_name }}"
+  - name: Get All VPCs | project:"{{ project_name }}"
     amazon.aws.ec2_vpc_net_info:
       filters:
         "tag:project": "{{ project_name }}"
     register: vpcs
 
-  # - name: Show vpcs
-  #   ansible.builtin.debug: var=vpcs
+  # - ansible.builtin.debug: var=vpcs
 
-
-  # ⚠ Requires all EC2 instances to be terminated first!
-  - name: Find Dangling ENIs in the VPC
+  - name: Get All Dangling ENIs in the VPC
     when: vpcs.vpcs is defined and vpcs.vpcs | length > 0
     amazon.aws.ec2_eni_info:
       filters:
         vpc-id: "{{ vpcs.vpcs[0].id }}"
+        "tag:project": "{{ project_name }}"
     register: enis
 
-  # - name: Show enis
-  #   ansible.builtin.debug: var=enis
+  # - ansible.builtin.debug: var=enis
 
-  - name: Delete all dangling ENIs
-    when: enis.network_interfaces is defined and enis.network_interfaces | length > 0
-    loop: '{{ enis.network_interfaces }}'
-    amazon.aws.ec2_eni:
-      state: absent
-      eni_id: "{{ item.id }}"
+  # - name: Get All DHCP Option in the VPC
+  #   amazon.aws.ec2_vpc_dhcp_option_info:
+  #     # filters:
+  #     #   "tag:project": "{{ project_name }}"
+  #   register: dhcp_info
+  # - ansible.builtin.debug: var=dhcp_info
 
-
-
-
-  - name: Get All Subnets with tag project:"{{ project_name }}"
+  - name: Get All Subnets | project:"{{ project_name }}"
     amazon.aws.ec2_vpc_subnet_info:
       filters:
         "tag:project": "{{ project_name }}"
     register: subnets
 
-  # - name: Show subnets
-  #   ansible.builtin.debug: var=subnets
+  # - ansible.builtin.debug: var=subnets
+
+  - name: Get All Route Tables | project:"{{ project_name }}"
+    amazon.aws.ec2_vpc_route_table_info:
+      filters:
+        "tag:project": "{{ project_name }}"
+    register: route_tables
+
+  # - ansible.builtin.debug: var=route_tables
+
+  - name: Get All Internet Gateways | project:"{{ project_name }}"
+    amazon.aws.ec2_vpc_igw_info:
+      filters:
+        "tag:project": "{{ project_name }}"
+    register: igws
+
+  # - ansible.builtin.debug: var=igws
+
+  - name: Get All Security Groups | project:"{{ project_name }}"
+    amazon.aws.ec2_group_info:
+      filters:
+        "tag:project": "{{ project_name }}"
+    register: security_groups
+
+  # - ansible.builtin.debug: var=security_groups
+
+  #----------------------------------------------------------------------------
+  # Summarize Resources to Destroy
+  #----------------------------------------------------------------------------
+  - name: Resource Summary
+    ansible.builtin.debug:
+      msg:
+      - "{{ ec2_instances.instances | length }} EC2 Instances"
+      - "{{ vpcs.vpcs | length }} VPCs"
+      - "{{ enis.network_interfaces | default([]) | length }} ENIs"
+      - "{{ subnets.subnets | length }} Subnets"
+      - "{{ route_tables.route_tables | length }} Route Tables"
+      # - "{{ dhcp_info is defined | ternary('1','0') }} DHCP Info"
+      - "{{ igws.internet_gateways | length }} Internet Gateways"
+      - "{{ security_groups.security_groups | length }} Security Groups"
+
+  #----------------------------------------------------------------------------
+  # Confirm Destruction!
+  #----------------------------------------------------------------------------
+
+  - name: Confirm Deletion
+    ansible.builtin.pause:
+      prompt: |
+         
+                /\
+               /  \
+              / ❕ \   Delete All resources in the project "{{ project_name }}"? [y/n] (yes)
+             /______\
+         
+    register: input
+
+  # - ansible.builtin.debug: var=input.user_input
+
+  - name: Set Delete Confirmation
+    when: input.user_input is defined
+    ansible.builtin.set_fact:
+      is_confirmed: "{{ (input.user_input | length == 0) or (input.user_input[0] | lower == 'y') }}"
+
+  - name: Show is_confirmed
+    ansible.builtin.debug:
+      var: is_confirmed
+      verbosity: 3
+
+
+
+  #----------------------------------------------------------------------------
+  # Delete VPC Resources
+  #----------------------------------------------------------------------------
+
+  - name: Delete All EC2 instances | project:"{{ project_name }}"
+    when: is_confirmed and ec2_instances is defined and ec2_instances | length > 0
+    amazon.aws.ec2_instance:
+      state: absent
+      wait: yes
+      filters:
+        # instance-state-name: [ "running" ]
+        "tag:project": "{{ project_name }}"
+    register: ec2_instances_deleted
+  # - ansible.builtin.debug: var=ec2_instances_deleted
+
+  - name: Delete All dangling ENIs
+    when: is_confirmed and enis.network_interfaces is defined and enis.network_interfaces | length > 0
+    loop: '{{ enis.network_interfaces }}'
+    amazon.aws.ec2_eni:
+      state: absent
+      eni_id: "{{ item.id }}"
+
+  # - name: Delete All DHCP Options
+  #   amazon.aws.ec2_vpc_dhcp_option:
+  #     # vpc_id: "{{ vpcs.vpcs[0].id }}"
+  #     state: absent
+  #   register: dhcp_info_deleted
+  # - ansible.builtin.debug: var=dhcp_info_deleted
 
   - name: Delete Subnets
+    when: is_confirmed and subnets is defined and subnets.subnets | length > 0
     loop: '{{ subnets.subnets }}'
     amazon.aws.ec2_vpc_subnet:
       vpc_id: "{{ item.vpc_id }}"
       cidr: "{{ item.cidr_block }}"
       state: absent
+    register: subnets_deleted
 
-
-
-
-  - name: Get All Route Tables with tag project:"{{ project_name }}"
-    community.aws.ec2_vpc_route_table_info:
-      filters:
-        "tag:project": "{{ project_name }}"
-    register: rts
-
-  # - name: Show rts
-  #   ansible.builtin.debug: var=rts
+  # - ansible.builtin.debug: var=subnets_deleted
 
   - name: Delete Route Table
-    loop: '{{ rts.route_tables }}'
-    community.aws.ec2_vpc_route_table:
+    when: is_confirmed and route_tables is defined and route_tables.route_tables | length > 0
+    loop: '{{ route_tables.route_tables }}'
+    amazon.aws.ec2_vpc_route_table:
       route_table_id: "{{ item.id }}"
       lookup: id
       state: absent
+    register: route_tables_deleted
 
-
-
-
-  # - name: Get All Internet Gateways with tag project:"{{ project_name }}"
-  #   community.aws.ec2_vpc_igw_info:
-  #     convert_tags: yes
-  #     filters:
-  #       "tag:project": "{{ project_name }}"
-  #   register: igws
-
-  # - name: Show igws
-  #   ansible.builtin.debug: var=igws
+  # - ansible.builtin.debug: var=route_tables_deleted
 
   - name: Delete Internet Gateway
+    when: is_confirmed and igws is defined # and igws.internet_gateways | length > 0
     loop: '{{ vpcs.vpcs }}'
-    community.aws.ec2_vpc_igw:
+    amazon.aws.ec2_vpc_igw:
       vpc_id: "{{ item.vpc_id }}"
       state: absent
+    register: igws_deleted
 
-
-
-
-  - name: Get all Security Groups with tag project:"{{ project_name }}"
-    amazon.aws.ec2_group_info:
-      filters:
-        "tag:project": "{{ project_name }}"
-    register: sgs
-
-  # - name: Show sgs
-  #   ansible.builtin.debug: var=sgs
+  # - ansible.builtin.debug: var=igws_deleted
 
   - name: Delete Security Groups in VPC
-    loop: "{{ sgs.security_groups }}"
-    when: item.group_name != "default"
+    when: is_confirmed and security_groups is defined and security_groups.security_groups | length > 0
+    loop: "{{ security_groups.security_groups }}"
     amazon.aws.ec2_group:
       group_id: "{{ item.group_id }}"
       state: absent
+    register: security_groups_deleted
 
+  # - ansible.builtin.debug: var=security_groups_deleted
 
-  - name: Delete VPCs with tag project:"{{ project_name }}"
+  - name: Delete VPCs | project:"{{ project_name }}"
+    when: is_confirmed and vpcs is defined and vpcs.vpcs | length > 0
     loop: "{{ vpcs.vpcs }}"
     amazon.aws.ec2_vpc_net:
-      name: "{{ project_name }}"              # required
-      cidr_block: "{{ item.cidr_block }}"     # required
+      vpc_id: "{{ item.vpc_id }}"            # required
+      purge_cidrs: yes    # Remove CIDRs associated with VPC and no in cidr_block
       state: absent
+    register: vpcs_deleted
+
+  - ansible.builtin.debug: var=vpcs_deleted
+    when: debug is defined and debug
+
+
+  - name: Delete Keypair in AWS | {{ ssh_keypair_name }}
+    when: is_confirmed
+    amazon.aws.ec2_key:
+      name: "{{ ssh_keypair_name }}"
+      state: absent
+    register: keypair_remote_deleted
+  # - ansible.builtin.debug: var=keypair_remote_deleted
+
+
+  - name: Delete Local Private Key | {{ ssh_keypair_directory }}/{{ ssh_keypair_name }}
+    when: is_confirmed and ssh_keypair_name is defined
+    ansible.builtin.file:
+      path: "{{ ssh_keypair_directory }}/{{ ssh_keypair_name }}"
+      state: absent
+    register: keypair_local_deleted
+  # - ansible.builtin.debug: var=keypair_local_deleted
+
+  #
+  # ToDo: Delete Route53 DNS Records in Project
+  #
+
+  # - name: Retrieve the DNS records
+  #   community.aws.route53:
+  #     state: get
+  #     zone: "{{ domain_name }}"
+  #     record: new.foo.com
+  #     type: A
+  #   register: records
+  # - ansible.builtin.debug: var=records
+
+  # - name: Delete A record using the results from the get command
+  #   community.aws.route53:
+  #     state: absent
+  #     zone: "{{ domain_name }}"
+  #     record: "{{ rec.set.record }}"
+  #     ttl: "{{ rec.set.ttl }}"
+  #     type: "{{ rec.set.type }}"
+  #     value: "{{ rec.set.value }}"
+
+  # - name: Delete public DNS entry for the ISE node(s)
+  #   community.aws.route53:
+  #     state: absent
+  #     zone: "{{ domain_name }}"
+  #     record: "{{ item.tags.Name }}.{{ domain_name }}"
+  #     # overwrite: yes
+  #     # private_zone: no
+  #     # type: A
+  #     # ttl: 7200
+  #     # value: "{{ item.public_ip_address }}"
+  #     # wait: no
+
+  # - name: Delete private DNS entry for the ISE node(s)
+  #   community.aws.route53:
+  #     state: absent
+  #     zone: "{{ domain_name }}"
+  #     record: "{{ item.tags.Name }}.{{ domain_name }}"
+  #     # overwrite: yes
+  #     # private_zone: yes
+  #     # type: A
+  #     # wait: no
+
+
+  # - name: Retrieve the DNS details
+  #   community.aws.route53:
+  #     state: get
+  #     zone: "{{ domain_name }}"
+  #     record: "{{ domain_name }}"
+  #     type: A
+  #   register: rec
+
+  # - name: Show rec
+  #   ansible.builtin.debug: var=rec
+
+  # - name: Delete A records using the results from the get command
+  #   community.aws.route53:
+  #     state: absent
+  #     zone: "{{ domain_name }}"
+  #     record: "{{ rec.set.record }}"
+  #     ttl: "{{ rec.set.ttl }}"
+  #     type: "{{ rec.set.type }}"
+  #     value: "{{ rec.set.value }}"
+
+  #
+  # ToDo: Delete S3 Buckets in Project
+  #
+
 
 
   - name: Delete the Meraki Network | {{ meraki_vmx_net_name }}
@@ -172,19 +338,6 @@
       org_name: "{{ meraki_org_name }}"
       net_name: "{{ meraki_vmx_net_name }}"
       state: absent
-
-
-  - name: Delete Keypair from AWS | {{ ssh_keypair_name }}
-    amazon.aws.ec2_key:
-      name: "{{ ssh_keypair_name }}"
-      state: absent
-
-
-  - name: Delete Local Private Key | {{ ssh_keypair_directory }}/{{ ssh_keypair_name }}
-    ansible.builtin.file:
-      path: "{{ ssh_keypair_directory }}/{{ ssh_keypair_name }}"
-      state: absent
-
 
 
 ...
