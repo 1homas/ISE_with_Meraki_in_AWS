@@ -35,7 +35,7 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
     pip install --upgrade pip
     pip install pipenv
     pipenv install --python 3.9
-    pipenv install ansible boto3 botocore ciscoisesdk jmespath 
+    pipenv install ansible boto3 botocore ciscoisesdk jmespath paramiko
     pipenv shell
     ```
 
