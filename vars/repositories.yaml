@@ -1,14 +1,8 @@
 ---
-
-
 repositories:
-
-- name: FTP
-  serverName: "{{ lookup('env', 'ISE_BACKUP_REPOSITORY') }}"
-  protocol: FTP
-  path: /
-  userName: "{{ lookup('env', 'ISE_BACKUP_USERNAME') }}"
-  password: "{{ lookup('env', 'ISE_BACKUP_PASSWORD') }}"
-
-
-...
+  - name: FTP
+    serverName: "{{ lookup('env', 'ISE_REPOSITORY') }}"
+    protocol: FTP
+    path: /
+    userName: "{{ lookup('env', 'ISE_REPOSITORY_USERNAME') }}"
+    password: "{{ lookup('env', 'ISE_REPOSITORY_PASSWORD') }}"
