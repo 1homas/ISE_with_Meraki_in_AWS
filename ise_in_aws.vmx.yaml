@@ -1,109 +1,120 @@
 ---
+#
+# The default LAN Setting for a new network will be :
+#
+# | Name                | Subnet            | MX IP
+# |---------------------|-------------------|--------------
+# | Single LAN Settings | 192.168.128.0/24  | 192.168.128.1
+#
+# Timezones: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+#
+- name: Create a vMX Network '{{ meraki_org_name }}:{{ meraki_vmx_net_name }}'
+  cisco.meraki.meraki_network:
+    org_name: "{{ meraki_org_name }}"
+    net_name: "{{ meraki_vmx_net_name }}"
+    state: present
+    type: appliance
+    timezone: America/Los_Angeles
+    tags: ise, demo, lab, hub, mx
+  register: vmx_network
 
+# - name: vmx_network
+#   ansible.builtin.debug: var=vmx_network
 
-  #
-  # The default LAN Setting for a new network will be :
-  #
-  # | Name                | Subnet            | MX IP
-  # |---------------------|-------------------|--------------
-  # | Single LAN Settings | 192.168.128.0/24  | 192.168.128.1
-  #
-  # Timezones: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-  #
-  - name: Create a vMX Network '{{ meraki_org_name }}:{{ meraki_vmx_net_name }}'
-    cisco.meraki.meraki_network:
-      org_name: "{{ meraki_org_name }}"
-      net_name: "{{ meraki_vmx_net_name }}"
-      state: present
-      type: appliance
-      timezone: America/Los_Angeles
-      tags: ise, demo, lab, hub, mx
-    register: new_network
+- name: Create SG-AllowAll Security Group
+  amazon.aws.ec2_group:
+    name: SG-AllowAll
+    description: Allow all traffic
+    vpc_id: "{{ vpc.vpc.id }}"
+    region: "{{ aws_region }}"
+    rules:
+      - proto: all
+        cidr_ip: 0.0.0.0/0 # any
+        rule_desc: Allow All
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0 # any
+        rule_desc: Allow All
+    tags:
+      Name: SG-AllowAll
+      project: "{{ project_name }}"
+      started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
+  register: sg_allowall
 
-  # - name: new_network
-  #   ansible.builtin.debug: var=new_network
+# - name: Show sg_allowall
+#   ansible.builtin.debug: var=sg_allowall
 
+- name: Check for Existing vMX Instance (idempotency) | {{ project_name }}
+  community.aws.ec2_instance_info: # get all by default
+    filters:
+      instance-state-name: ["running"]
+      "tag:project": "{{ project_name }}"
+      "tag:Name": "{{ vmx_name }}"
+      "tag:product": "vMX"
+  register: vmx
 
+# - name: Show vmx
+#   ansible.builtin.debug: var=vmx
+- name: Claim vMX and Generate Token
+  when: vmx.instances | length <= 0
+  block:
+    - name: Claim vMX Device & License
+      ansible.builtin.uri:
+        url: "https://api.meraki.com/api/v1/networks/{{ vmx_network.data.id }}/devices/claim/vmx"
+        method: POST
+        headers:
+          Accept: application/json
+          Content-Type: application/json
+          X-Cisco-Meraki-API-Key: "{{ lookup('env','MERAKI_KEY') }}"
+        body:
+          size: "{{ vmx_license_size }}"
+        body_format: json
+        status_code: 200
+        validate_certs: false
+        return_content: true
+      register: new_vmx
 
-  - name: Create SG-AllowAll Security Group
-    amazon.aws.ec2_group:
-      name: SG-AllowAll
-      description: Allow all traffic
-      vpc_id: "{{ vpc.vpc.id }}"
-      region: "{{ aws_region }}"
-      rules:
-        - proto: all
-          cidr_ip: 0.0.0.0/0    # any
-          rule_desc: Allow All
-      rules_egress:
-        - proto: all
-          cidr_ip: 0.0.0.0/0    # any
-          rule_desc: Allow All
-      tags:
-        Name: SG-AllowAll
-        project: "{{ project_name }}"
-        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
-    register: sg_allowall
+    # - name: Show vmx
+    #   ansible.builtin.debug: var=new_vmx.json
 
-  # - name: Show sg_allowall
-  #   ansible.builtin.debug: var=sg_allowall
+    - name: Generate vMX Token
+      ansible.builtin.uri:
+        url: "https://api.meraki.com/api/v1/devices/{{ new_vmx.json.serial }}/appliance/vmx/authenticationToken"
+        method: POST
+        headers:
+          Accept: application/json
+          Content-Type: application/json
+          X-Cisco-Meraki-API-Key: "{{ lookup('env','MERAKI_KEY') }}"
+        body_format: json
+        status_code: 201
+        validate_certs: false
+        return_content: true
+      register: vmx_token_response
 
+    # - name: Show vmx_token_response
+    #   ansible.builtin.debug: var=vmx_token_response.json
 
-
-
-  #
-  # Check if vMX is already instantiated
-  # We do not want to prompt for a vMX Auth Token unless necessary!
-  #
-  - name: Query for existing vMX instances in project "'{{ project_name }}'"
-    community.aws.ec2_instance_info:    # get all by default
-      filters:
-        instance-state-name: [ 'running' ]
-        "tag:project": "{{ project_name }}"
-        "tag:Name": "{{ vmx_name }}"
-        "tag:product": "vMX"
-    register: vmx
-
-  # - name: Show vmx
-  #   ansible.builtin.debug: var=vmx
-
-
-  # ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠
-  # Do not use cisco.meraki.meraki_device to claim any vMX devices into
-  # this network - the VMX authentication token will do this automatically!
-  # ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠
-  - name: Get vMX Auth Token and Create Instance
-    when: vmx.instances | length <= 0
-    block:
-    - name: Prompt for vMX Token
-      ansible.builtin.pause:
-        prompt: |
-          Generate the vMX Authentication Token :
-          - In the Meraki Dashboard, select the network '{{ meraki_org_name }}:{{ meraki_vmx_net_name }}'
-          - Add a vMX device if needed
-          - Navigate to Security & SDWAN > Monitor > Appliance Status
-          - Scroll down and select Generate authentication token...
-          - Paste the token here and press <Enter>
-      register: token
-
-    - name: Set meraki_vmx_authentication_token
+    - name: Extract Token
       ansible.builtin.set_fact:
-        meraki_vmx_authentication_token: "{{ token.user_input | trim }}"
+        meraki_vmx_authentication_token: "{{ vmx_token_response.json.token }}"
+
+    # - name: Show token
+    #   ansible.builtin.debug: var=meraki_vmx_authentication_token
 
     #
     # 💡 Uses the community.aws.ec2_instance module which supports `user_data`
-    # field for inclusion of the Meraki vMX Authentication Token!
+    #   field for inclusion of the Meraki vMX Authentication Token!
     #
     - name: Create vMX Instance
       community.aws.ec2_instance:
         # state: present  # instances exist but not guarantee of state (e.g. running)
-        state: running  # present + ensures the instances are running for public IP address!
+        state: running # present + ensures the instances are running for public IP address!
         # state: started  # running + waits for EC2 status checks; ~3 minutes per node
         vpc_subnet_id: "{{ subnet_public.subnet.id }}"
         region: "{{ aws_region }}"
         image_id: "{{ vmx_aws_ami }}"
         instance_type: "{{ vmx_aws_instance_type }}"
-        key_name: "{{ ssh_keypair_name }}"   # SSH Keypair Name
+        key_name: "{{ ssh_keypair_name }}" # SSH Keypair Name
         security_group: "{{ sg_allowall.group_name }}"
         network:
           assign_public_ip: yes
@@ -115,163 +126,142 @@
               delete_on_termination: true
               volume_size: 10
         user_data: "{{ meraki_vmx_authentication_token | trim }}"
-        wait: yes    # must wait to get eni for NAT and private RT changes
+        wait: yes # must wait to get eni for NAT and private RT changes
         tags:
           Name: "{{ vmx_name }}"
           project: "{{ project_name }}"
           product: vMX
-          started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
+          started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
       register: vmx
 
-    # - name: Show vmx
-    #   ansible.builtin.debug: var=vmx
+  # - name: Show vmx
+  #   ansible.builtin.debug: var=vmx
 
+#
+# ⚠ Requires the vMX to be initialized; Use `wait: yes` above
+# ⚠ Works with eni_id but not subnet_id
+#
+- name: Disable Source/Destination Check for vMX as NAT device!
+  when: vmx.instances[0].subnet_id is defined
+  amazon.aws.ec2_eni:
+    instance_id: "{{ vmx.instances[0].instance_id }}"
+    eni_id: "{{ vmx.instances[0].network_interfaces[0].network_interface_id }}"
+    source_dest_check: false
+  register: vmx_eni
 
-  #
-  # Check if vMX is already instantiated
-  # We do not want to prompt for a vMX Auth Token unless necessary!
-  #
-  - name: Query for existing vMX instances in project "'{{ project_name }}'"
-    community.aws.ec2_instance_info:    # get all by default
-      filters:
-        instance-state-name: [ 'running' ]
-        "tag:project": "{{ project_name }}"
-        "tag:Name": "{{ vmx_name }}"
-        # "tag:product": "vMX"
-    register: vmx
+# - name: Show vmx_eni
+#   ansible.builtin.debug: var=vmx_eni
 
+- name: Add Public DNS entry for the vMX
+  when: domain_name is defined
+  community.aws.route53:
+    state: present
+    zone: "{{ domain_name }}"
+    record: "{{ project_name }}-vmx.{{ domain_name }}"
+    overwrite: yes
+    private_zone: no
+    type: A
+    ttl: 7200
+    value: "{{ vmx.instances[0].public_ip_address }}"
+    wait: no
 
-  #
-  # ⚠ Requires the vMX to be initialized; Use `wait: yes` above
-  # ⚠ Works with eni_id but not subnet_id
-  #
-  - name: Disable Source/Destination Check for vMX as NAT device!
-    when: vmx.instances[0].subnet_id is defined
-    amazon.aws.ec2_eni:
-      instance_id: "{{ vmx.instances[0].instance_id }}"
-      eni_id: "{{ vmx.instances[0].network_interfaces[0].network_interface_id }}"
-      source_dest_check: false
-    register: vmx_eni
+- name: Add private DNS entry for the vMX
+  when: domain_name is defined
+  community.aws.route53:
+    state: present
+    zone: "{{ domain_name }}"
+    record: "{{ project_name }}-vmx.{{ domain_name }}"
+    overwrite: yes
+    private_zone: yes
+    type: A
+    ttl: 7200
+    value: "{{ vmx.instances[0].private_ip_address }}"
+    wait: no
 
-  # - name: Show vmx_eni
-  #   ansible.builtin.debug: var=vmx_eni
+#
+# Update the Private Route Table
+#
+# | Destination     | Target |
+# |-----------------|--------|
+# | 172.31.0.0/16   | local
+# | 192.168.0.0/16  | eni-*  <=== add this
+# | 0.0.0.0/0       | igw-*
+#
+- name: Update the AWS Private Route Table with vMX VPN Network
+  community.aws.ec2_vpc_route_table:
+    vpc_id: "{{ vpc.vpc.id }}"
+    subnets:
+      - "{{ subnet_private.subnet.id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.gateway_id }}"
+      - dest: 192.168.0.0/16
+        instance_id: "{{ vmx.instances[0].instance_id }}"
+    tags:
+      Name: RT_Private
+      project: "{{ project_name }}"
+      started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
+  register: rt_private
 
+- name: Find {{ meraki_vpn_hub.net_name }} Network to use as VPN Hub
+  cisco.meraki.meraki_network:
+    org_name: "{{ meraki_org_name }}"
+    net_name: "{{ meraki_vpn_hub.net_name }}"
+    state: query
+  register: lab_network
 
-  - name: Add public DNS entry for the vMX
-    when: domain_name is defined
-    community.aws.route53:
-      state: present
-      zone: "{{ domain_name }}"
-      record: "{{ project_name }}-vmx.{{ domain_name }}"
-      overwrite: yes
-      private_zone: no
-      type: A
-      ttl: 7200
-      value: "{{ vmx.instances[0].public_ip_address }}"
-      wait: no
+# - name: Show lab_network
+#   ansible.builtin.debug: var=lab_network.data
 
-  - name: Add private DNS entry for the vMX
-    when: domain_name is defined
-    community.aws.route53:
-      state: present
-      zone: "{{ domain_name }}"
-      record: "{{ project_name }}-vmx.{{ domain_name }}"
-      overwrite: yes
-      private_zone: yes
-      type: A
-      ttl: 7200
-      value: "{{ vmx.instances[0].private_ip_address }}"
-      wait: no
+# ⓘ Meraki vMX must be configured "Passthrough or VPN Concentrator" mode!
+#    "Routed" mode requires 2 or more ports but vMX only has 1 port!
+- name: Configure vMX Deployment as Passthrough or VPN Concentrator
+  delegate_to: localhost
+  ansible.builtin.uri:
+    url: "https://api.meraki.com/api/v1/networks/{{ vmx_network.data.id }}/appliance/settings"
+    method: PUT
+    headers:
+      Accept: application/json
+      Content-Type: application/json
+      X-Cisco-Meraki-API-Key: "{{ lookup('env','MERAKI_KEY') }}"
+    body:
+      deploymentMode: passthrough
+    body_format: json
+    status_code: 200
+    validate_certs: false
+    return_content: true
+  register: vmx_deployment
 
+- name: Show vMX Settings
+  ansible.builtin.debug: var=vmx_deployment.json
 
-
-
-  #
-  # Update the Private Route Table
-  #
-  # | Destination     | Target |
-  # |-----------------|--------|
-  # | 172.31.0.0/16   | local
-  # | 192.168.0.0/16  | eni-*  <=== add this
-  # | 0.0.0.0/0       | igw-*
-  #
-  - name: Update the AWS Private Route Table with vMX VPN Network
-    community.aws.ec2_vpc_route_table:
-      vpc_id: "{{ vpc.vpc.id }}"
-      subnets:
-        - "{{ subnet_private.subnet.id }}"
-      routes:
-        - dest: 0.0.0.0/0
-          gateway_id: "{{ igw.gateway_id }}"
-        - dest: 192.168.0.0/16
-          instance_id: "{{ vmx.instances[0].instance_id }}"
-      tags:
-        Name: RT_Private
-        project: "{{ project_name }}"
-        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
-    register: rt_private
-
-
-
-
-  - name: Find {{ meraki_vpn_hub.net_name }} Network to use as VPN Hub
-    cisco.meraki.meraki_network:
-      org_name: "{{ meraki_org_name }}"
-      net_name: "{{ meraki_vpn_hub.net_name }}"
-      state: query
-    register: lab_network
-
-  # - name: Show lab_network
-  #   ansible.builtin.debug: var=lab_network
-
-
-
-
-  - name: Set vMX to VPN Spoke mode to Lab Hub
-    cisco.meraki.meraki_site_to_site_vpn:
-      org_name: "{{ meraki_org_name }}"
-      net_name: "{{ meraki_vmx_net_name }}"
-      state: present
-      mode: spoke     # use `spoke` to avoid AWS $$$ for outbound `hub` traffic
-      hubs:
+- name: Set vMX to VPN Spoke mode to Lab Hub
+  cisco.meraki.meraki_site_to_site_vpn:
+    org_name: "{{ meraki_org_name }}"
+    net_name: "{{ meraki_vmx_net_name }}"
+    state: present
+    mode: spoke # use `spoke` to avoid AWS $$$ for outbound `hub` traffic
+    hubs:
       - hub_id: "{{ lab_network.data.id }}"
-        use_default_route: false  # send all default route traffic to this hub
-      # 🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞
-      #
-      # subnets:
-      # - local_subnet: 172.31.0.0/16
-      #   use_vpn: true
-      #
-      # Error - Status: 400
-      # Unrecognized subnet 172.31.0.0/16 for Passthrough MX - only Client VPN subnet(s) permitted
-      #
-      # Cannot Add Local Network via API! 8-(
-      # Must do it manually in Dashboard:
-      #   Security & SDWAN > Configure > Site-to-Site VPN > Local Networks
-      #
-      # 🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞  🐞
-    register: spoke_mode
+        use_default_route: false # send all default route traffic to this hub
+  register: spoke_mode
+# - name: spoke_mode
+#   ansible.builtin.debug: var=spoke_mode
 
-  # - name: spoke_mode
-  #   ansible.builtin.debug: var=spoke_mode
+- name: Manually add the vMX Local Subnet
+  ansible.builtin.pause:
+    prompt: |
 
-  - name: Manually add the vMX Local Subnet
-    ansible.builtin.pause:
-      prompt: |
+      You must now manually add the vMX Local Subnet in the Site-to-Site VPN.
 
-        You must now manually add the vMX Local Subnet in the S2S VPN.
+      1. Open the Meraki Dashboard
+      2. Go to Security & SDWAN > Configure > Site-to-Site VPN
+      3. Under VPN Settings, Add a Local Network:
+          Name: ISE_Meraki_AWS
+          VPN Mode: Enabled
+          Subnet: 172.31.0.0/16
+      4. Save!
 
-        1. Open the Meraki Dashboard
-        2. Go to Security & SDWAN > Configure > Site-to-Site VPN
-        3. Under VPN Settings, Add a Local Network:
-            Name: ISE_Meraki_AWS
-            VPN Mode: Enabled
-            Subnet: 172.31.0.0/16
-        4. Save!
+      You may now ping through the auto-VPN into your AWS instance(s)!
 
-        You may now ping through the auto-VPN into your AWS instance(s)!
-
-        Press Enter to Continue...
-
-
-...
+      Press Enter to Continue...
