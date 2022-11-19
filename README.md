@@ -12,7 +12,7 @@ This demo environment was created for use with the [Cisco ISE with Meraki Webina
 
 ![ISE with Meraki in AWS](images/ISE_with_Meraki_in_AWS.png)
 
-You will need at least one additional Meraki MX or Z network to act as a VPN hub to terminate the other side of the VPN connection. You should have this configured *before* you run the Ansible playbook because it will attempt to connect the vMX to an existing `Lab` VPN hub or you may edit the `vars/main.yaml` file for your VPN hub network name.
+You will need at least one additional Meraki MX or Z network to act as a VPN hub to terminate the other side of the VPN connection. You should have your hub MX working *before* you run the Ansible playbook because it will attempt to connect the vMX to an existing `Lab` VPN hub. You may edit the `vars/main.yaml` file to customize your VPN hub network name. I chose to have the vMX network in AWS be a VPN *spoke* because I do not want AWS to charge me for all of my network traffic flowing through AWS to the Internet!
 
 Running `ansible-playbook ise_in_aws.yaml` will create :
 - AWS VPC, subnets, route tables, internet gateway. For the gory details, see **Manual Configuration in AWS Console and Meraki Dashboard** below.
@@ -57,9 +57,22 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
 
     ```bash
     # ISE REST API Credentials
-    export ISE_REST_USERNAME=admin
-    export ISE_REST_PASSWORD=ISEisC00L
+    export ISE_USERNAME=admin
+    export ISE_PASSWORD=ISEisC00L
     export ISE_VERIFY=false
+    export ISE_DEBUG=false
+    export ISE_INIT_PASSWORD=C1sco12345
+    # Secrets
+    export ISE_RADIUS_SECRET=ISEisC00L
+    export ISE_TACACS_SECRET=ISEisC00L
+    export ISE_SNMP_SECRET=ISEisC00L
+    # Repository & Backups
+    export ISE_REPOSITORY=ftp.trust0.net
+    export ISE_REPOSITORY_PROTOCOL=FTP
+    export ISE_REPOSITORY_PATH=/
+    export ISE_REPOSITORY_USERNAME=ise
+    export ISE_REPOSITORY_PASSWORD=ISEisC00L
+    export ISE_BACKUP_ENCRYPTION_KEY=ISEisC00L
     ```
 
     Alternatively, keep your environment variables in files in a `.secrets` or similar folder in your home directory and use `source {filename}` to load environment variables from the files:
@@ -75,6 +88,7 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
     - AMI identifiers for your AWS region if not `us-west-1`
     - your desired network CIDR ranges
     - your desired instance types
+    - your Meraki vMX instance type and license (S/M/L)
     - your default password(s) or pre-shared keys
 
 5. Run the Ansible playbook:  
