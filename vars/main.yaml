@@ -9,8 +9,8 @@ timezone: America/Los_Angeles
 #
 # ISE REST API
 #
-ise_username: "{{ lookup('env','ISE_REST_USERNAME') | default('admin') }}"
-ise_password: "{{ lookup('env','ISE_REST_PASSWORD') }}"
+ise_username: "{{ lookup('env','ISE_USERNAME') }}"
+ise_password: "{{ lookup('env','ISE_PASSWORD') }}"
 ise_verify: false
 ise_debug: false
 
@@ -48,10 +48,12 @@ pingvm_name: ping
 pingvm_private_ip: 172.31.2.111
 
 #
-# vMX AMI
+# vMX Instance
+# ⓘ Use c5.large for VMX-S size and c5.xlarge for VMX-L
 #
 vmx_aws_ami: ami-09db17cd0ae68ce37      # us-west-1
 vmx_aws_instance_type: c5.xlarge        # c5.large | c5.xlarge
+vmx_license_size: large                 # small (VMX-S) | large (VMX-L)
 vmx_name: vMX                           # Name in AWS
 vmx_private_ip: 172.31.1.5              # AWS reserves the first 2 IPs
 
@@ -63,7 +65,8 @@ vmx_private_ip: 172.31.1.5              # AWS reserves the first 2 IPs
 ise_nodes:
   - name: ise
     # ami: ami-0965fef2e601ad4d0  # us-west-1 ISE 3.1 Patch 1 20211209
-    ami: ami-0c59bbc144f97a440  # us-west-1 ISE 3.2.0.542 20221002
+    # ami: ami-0c59bbc144f97a440  # us-west-1 ISE 3.2.0.542 20221002
+    ami: ami-0768dd8e82836d887  # us-west-1 ISE 3.2.0.542 20221103
     instance_type: t3.xlarge    # ISE Eval/Demo size
     private_ip: 172.31.2.11
     role: Primary
