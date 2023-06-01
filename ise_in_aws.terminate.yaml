@@ -159,6 +159,11 @@
       var: is_confirmed
       verbosity: 3
 
+  - name: Delete the Meraki vMX Network | {{ meraki_vmx_net_name }}
+    cisco.meraki.meraki_network:
+      org_name: "{{ meraki_org_name }}"
+      net_name: "{{ meraki_vmx_net_name }}"
+      state: absent
 
 
   #----------------------------------------------------------------------------
@@ -331,13 +336,6 @@
   # ToDo: Delete S3 Buckets in Project
   #
 
-
-
-  - name: Delete the Meraki Network | {{ meraki_vmx_net_name }}
-    cisco.meraki.meraki_network:
-      org_name: "{{ meraki_org_name }}"
-      net_name: "{{ meraki_vmx_net_name }}"
-      state: absent
 
 
 ...
