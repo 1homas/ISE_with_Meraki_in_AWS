@@ -17,15 +17,15 @@
   - name: Create VPC
     ansible.builtin.include_tasks: ise_in_aws.vpc.yaml
 
-  - name: Create ISE (no wait)
-    ansible.builtin.include_tasks: ise_in_aws.ise.yaml
-
   - name: Create vMX
     ansible.builtin.include_tasks: ise_in_aws.vmx.yaml
     tags: meraki,vmx
 
   - name: Create PingVM
     ansible.builtin.include_tasks: ise_in_aws.ping_vm.yaml
+
+  - name: Create ISE (no wait)
+    ansible.builtin.include_tasks: ise_in_aws.ise.yaml
 
   - name: Create Meraki MR SSIDs
     ansible.builtin.include_tasks: ise_in_aws.mr_ssids.yaml
