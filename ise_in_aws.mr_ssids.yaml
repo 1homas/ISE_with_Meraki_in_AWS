@@ -1,36 +1,190 @@
 ---
 
 #------------------------------------------------------------------------------
+# .corp : 802.1X with ISE from Secure Cisco Meraki Wireless with ISE
+#------------------------------------------------------------------------------
+- name: Configure SSID | {{ meraki_org_name }}:{{ meraki_lab_net_name }}:.corp
+  delegate_to: localhost
+  cisco.meraki.meraki_ssid:
+    state: present
+    org_name: "{{ meraki_org_name }}"
+    net_name: "{{ meraki_lab_net_name }}"
+    name: .corp
+    number: 0
+    enabled: yes
+    visible: yes
+    auth_mode: 8021x-radius         # [open|psk|open-with-radius|8021x-meraki|8021x-radius]
+    encryption_mode: wpa            # [wpa|eap|wpa-eap]
+    wpa_encryption_mode: WPA2 only  # 🛑 ipsk-with-radius NOT SUPPORTED! [open|psk|open-with-radius|8021x-meraki|8021x-radius]
+    splash_page: None
+    radius_servers:
+    - host: 172.31.2.11
+      port: 1812
+      secret: "{{ radius_secret }}"
+    radius_accounting_servers:
+    - host: 172.31.2.11
+      port: 1813
+      secret: "{{ radius_secret }}"
+    available_on_all_aps: true
+    ip_assignment_mode: NAT mode
+
+    # 🛑 ▼▼▼ Unsupported with Ansible ▼▼▼
+    # radius_attribute_for_group_policies: Airespace-ACL-Name
+    # radius_server_attempts_limit: 3
+    # radius_server_timeout: 1
+    # radius_accounting_enabled: true
+    # radius_accounting_interim_interval: 600
+    # radius_authentication_nas_id: $NODE_MAC$:$VAP_NUM$
+    # radius_called_station_id: $NODE_MAC$:$VAP_NAME$
+    # radius_testing_enabled: true
+    # radius_failover_policy: Deny access          # [Deny access|Allow access]
+    # radius_fallback_enabled: false
+    # radius_load_balancing_policy: null
+    # radius_proxy_enabled: false
+    # adult_content_filtering_enabled: false
+    # availability_tags: []
+    # available_on_all_aps: true
+    # band_selection: Dual band operation
+    # dns_rewrite:
+    #   dns_custom_nameservers: []
+    #   enabled: false
+    # dot11r:
+    #   adaptive: false
+    #   enabled: false
+    # dot11w:
+    #   enabled: true
+    #   required: false
+    # ip_assignment_mode: NAT mode
+    # mandatory_dhcp_enabled: false
+    # min_bitrate: 11
+    # per_client_bandwidth_limit_down: 0
+    # per_client_bandwidth_limit_up: 0
+    # per_ssid_bandwidth_limit_down: 0
+    # per_ssid_bandwidth_limit_up: 0
+    # speed_burst:
+    #   enabled: false
+    # ssid_admin_accessible: false
+
+
+#------------------------------------------------------------------------------
+# .iot : MAB from Secure Cisco Meraki Wireless with ISE
+#
+# 🛑  cisco.meraki.meraki_ssid module does not recognize ipsk-with-radius  🛑
+# 🛑  'value of auth_mode must be one of: open, psk, open-with-radius, 8021x-meraki, 8021x-radius, got: ipsk-with-radius'
+#------------------------------------------------------------------------------
+- name: Configure SSID | {{ meraki_org_name }}:{{ meraki_lab_net_name }}:.iot
+  delegate_to: localhost
+  cisco.meraki.meraki_ssid:
+    state: present
+    org_name: "{{ meraki_org_name }}"
+    net_name: "{{ meraki_lab_net_name }}"
+    name: .iot
+    number: 1
+    enabled: yes
+    visible: yes
+    auth_mode: 8021x-radius         # [open|psk|open-with-radius|8021x-meraki|8021x-radius]
+    encryption_mode: wpa            # [wpa|eap|wpa-eap]
+    wpa_encryption_mode: WPA2 only  # 🛑 ipsk-with-radius NOT SUPPORTED! [open|psk|open-with-radius|8021x-meraki|8021x-radius]
+    splash_page: None
+    radius_servers:
+    - host: 172.31.2.11
+      port: 1812
+      secret: "{{ radius_secret }}"
+    radius_accounting_servers:
+    - host: 172.31.2.11
+      port: 1813
+      secret: "{{ radius_secret }}"
+    available_on_all_aps: true
+    ip_assignment_mode: NAT mode
+
+# 🛑 ▼▼▼ Unsupported with Ansible ▼▼▼
+#     radius_attribute_for_group_policies: Airespace-ACL-Name
+#     radius_authentication_nas_id: $NODE_MAC$:$VAP_NUM$
+#     radius_called_station_id: $NODE_MAC$:$VAP_NAME$
+#     radius_coa_enabled: true
+#     radius_testing_enabled: true
+#     radius_accounting_enabled: true
+#     radius_accounting_interim_interval: 600
+#     dot11w:
+#       enabled: true
+#       required: false
+#     # 🛑 ▼▼▼ Unsupported with Ansible ▼▼▼
+#     radius_failover_policy: null
+#     radius_fallback_enabled: false
+#     radius_load_balancing_policy: null
+#     radius_proxy_enabled: false
+#     radius_server_attempts_limit: 3
+#     radius_server_timeout: 1
+#     admin_splash_url: null
+#     adult_content_filtering_enabled: false
+#     availability_tags: []
+#     band_selection: Dual band operation
+#     dns_rewrite:
+#       dns_custom_nameservers: []
+#       enabled: false
+#     dot11r:
+#       adaptive: false
+#       enabled: false
+#     mandatory_dhcp_enabled: true
+#     min_bitrate: 11
+#     per_client_bandwidth_limit_down: 0
+#     per_client_bandwidth_limit_up: 0
+#     per_ssid_bandwidth_limit_down: 0
+#     per_ssid_bandwidth_limit_up: 0
+#     speed_burst:
+#       enabled: false
+#     splash_page: Cisco ISE
+#     splash_timeout: 1440 minutes
+#     ssid_admin_accessible: false
+#     walled_garden_enabled: false
+
+- name: Manually change the SSID | {{ meraki_org_name }}:{{ meraki_lab_net_name }}:.iot
+  ansible.builtin.pause:
+    prompt: |
+
+      You must now manually change the SSID to 'Identity PSK with RADIUS' 
+      because the Meraki Ansible module does not support 
+      wpa_encryption_mode: ipsk-with-radius
+
+      1. Open the Meraki Dashboard
+      2. Go to Wireless > Configure > SSID
+      3. Select .iot
+      4. Select Security : Identity PSK with RADIUS
+      5. Save
+
+      Press Enter to Continue...
+
+#------------------------------------------------------------------------------
 # .guest : MAB WebAuth with ISE from Secure Cisco Meraki Wireless with ISE
 #------------------------------------------------------------------------------
-# - name: Configure SSID | {{ meraki_org_name }}:{{ meraki_vmx_net_name }}:.guest
-#   delegate_to: localhost
-#   cisco.meraki.meraki_mr_ssid:
-#     state: present
-#     org_name: "{{ meraki_org_name }}"
-#     net_name: "{{ meraki_lab_net_name }}"
-#     name: .guest
-#     number: 0
-#     enabled: no
-#     visible: true
-#     available_on_all_aps: true
-#     auth_mode: open-with-radius     # [open|psk|open-with-radius|8021x-meraki|8021x-radius]
-#     radius_servers:
-#     - host: 172.31.2.11
-#       port: 1812
-#       secret: "{{ radius_secret }}"
-#     radius_accounting_servers:
-#     - host: 172.31.2.11
-#       port: 1813
-#       secret: "{{ radius_secret }}"
-#     radius_coa_enabled: true
-#     radius_accounting_enabled: true
-#     ip_assignment_mode: NAT mode
-#     splash_page: Cisco ISE
-#     # splash_timeout: 1440 minutes  # 🛑 Unsupported
-#     walled_garden_enabled: true
-#     walled_garden_ranges:
-#     - 172.31.2.11/32
+- name: Configure SSID | {{ meraki_org_name }}:{{ meraki_lab_net_name }}:.guest
+  delegate_to: localhost
+  cisco.meraki.meraki_mr_ssid:
+    state: present
+    org_name: "{{ meraki_org_name }}"
+    net_name: "{{ meraki_lab_net_name }}"
+    name: .guest
+    number: 2
+    enabled: no
+    visible: true
+    available_on_all_aps: true
+    auth_mode: open-with-radius     # [open|psk|open-with-radius|8021x-meraki|8021x-radius]
+    radius_servers:
+    - host: 172.31.2.11
+      port: 1812
+      secret: "{{ radius_secret }}"
+    radius_accounting_servers:
+    - host: 172.31.2.11
+      port: 1813
+      secret: "{{ radius_secret }}"
+    radius_coa_enabled: true
+    radius_accounting_enabled: true
+    ip_assignment_mode: NAT mode
+    splash_page: Cisco ISE
+    # splash_timeout: 1440 minutes  # 🛑 Unsupported
+    walled_garden_enabled: true
+    walled_garden_ranges:
+    - 172.31.2.11/32
 #     # 🛑 ▼▼▼ Unsupported with Ansible ▼▼▼
 #     radius_attribute_for_group_policies: Airespace-ACL-Name   # 🛑 Unsupported
 #     radius_authentication_nas_id: $NODE_MAC$:$VAP_NUM$        # 🛑 Unsupported
@@ -59,135 +213,3 @@
 #     speed_burst:
 #       enabled: false
 #     ssid_admin_accessible: false
-
-  #------------------------------------------------------------------------------
-  # .iot : MAB from Secure Cisco Meraki Wireless with ISE
-  #
-  # 🛑  cisco.meraki.meraki_ssid module does not recognize ipsk-with-radius  🛑
-  #------------------------------------------------------------------------------
-  # - name: Configure SSID | {{ meraki_org_name }}:{{ meraki_vmx_net_name }}:.iot
-  #   delegate_to: localhost
-  #   cisco.meraki.meraki_ssid:
-  #     state: present
-  #     org_name: "{{ meraki_org_name }}"
-  #     net_name: "{{ meraki_lab_net_name }}"
-  #     name: .iot
-  #     number: 1
-  #     enabled: false
-  #     visible: true
-  #     encryption_mode: wpa              # WPA Pre-Shared Key
-  #     wpa_encryption_mode: WPA2 only
-  #     auth_mode: ipsk-with-radius       # 🐞  ipsk-with-radius NOT SUPPORTED!
-  #     available_on_all_aps: true
-  #     ip_assignment_mode: NAT mode
-  #     radius_servers:
-  #     - host: 172.31.2.11
-  #       port: 1812
-  #       secret: "{{ radius_secret }}"
-  #     radius_accounting_servers:
-  #     - host: 172.31.2.11
-  #       port: 1813
-  #       secret: "{{ radius_secret }}"
-  #     radius_attribute_for_group_policies: Airespace-ACL-Name
-  #     radius_authentication_nas_id: $NODE_MAC$:$VAP_NUM$
-  #     radius_called_station_id: $NODE_MAC$:$VAP_NAME$
-  #     radius_coa_enabled: true
-  #     radius_testing_enabled: true
-  #     radius_accounting_enabled: true
-  #     radius_accounting_interim_interval: 600
-  #     dot11w:
-  #       enabled: true
-  #       required: false
-  #     # 🛑 ▼▼▼ Unsupported with Ansible ▼▼▼
-  #     radius_failover_policy: null
-  #     radius_fallback_enabled: false
-  #     radius_load_balancing_policy: null
-  #     radius_proxy_enabled: false
-  #     radius_server_attempts_limit: 3
-  #     radius_server_timeout: 1
-  #     admin_splash_url: null
-  #     adult_content_filtering_enabled: false
-  #     availability_tags: []
-  #     band_selection: Dual band operation
-  #     dns_rewrite:
-  #       dns_custom_nameservers: []
-  #       enabled: false
-  #     dot11r:
-  #       adaptive: false
-  #       enabled: false
-  #     mandatory_dhcp_enabled: true
-  #     min_bitrate: 11
-  #     per_client_bandwidth_limit_down: 0
-  #     per_client_bandwidth_limit_up: 0
-  #     per_ssid_bandwidth_limit_down: 0
-  #     per_ssid_bandwidth_limit_up: 0
-  #     speed_burst:
-  #       enabled: false
-  #     splash_page: Cisco ISE
-  #     splash_timeout: 1440 minutes
-  #     ssid_admin_accessible: false
-  #     walled_garden_enabled: false
-
-
-  #------------------------------------------------------------------------------
-  # .corp : 802.1X with ISE from Secure Cisco Meraki Wireless with ISE
-  #------------------------------------------------------------------------------
-  - name: Configure SSID | {{ meraki_org_name }}:{{ meraki_vmx_net_name }}:.corp
-    delegate_to: localhost
-    cisco.meraki.meraki_ssid:
-      state: present
-      org_name: "{{ meraki_org_name }}"
-      net_name: "{{ meraki_lab_net_name }}"
-      name: .corp
-      number: 2
-      enabled: yes
-      visible: yes
-      auth_mode: 8021x-radius         # [open|psk|open-with-radius|8021x-meraki|8021x-radius]
-      encryption_mode: wpa            # [wpa|eap|wpa-eap]
-      wpa_encryption_mode: WPA2 only  # [ WPA2 only|WPA1 and WPA2|WPA3 Only|WPA3 Transition Mode]
-      splash_page: None
-      radius_servers:
-      - host: 172.31.2.11
-        port: 1812
-        secret: "{{ radius_secret }}"
-      radius_accounting_servers:
-      - host: 172.31.2.11
-        port: 1813
-        secret: "{{ radius_secret }}"
-      # 🛑 ▼▼▼ Unsupported with Ansible ▼▼▼
-      # radius_attribute_for_group_policies: Airespace-ACL-Name
-      # radius_server_attempts_limit: 3
-      # radius_server_timeout: 1
-      # radius_accounting_enabled: true
-      # radius_accounting_interim_interval: 600
-      # radius_authentication_nas_id: $NODE_MAC$:$VAP_NUM$
-      # radius_called_station_id: $NODE_MAC$:$VAP_NAME$
-      # radius_testing_enabled: true
-      # radius_failover_policy: Deny access          # [Deny access|Allow access]
-      # radius_fallback_enabled: false
-      # radius_load_balancing_policy: null
-      # radius_proxy_enabled: false
-      # adult_content_filtering_enabled: false
-      # availability_tags: []
-      # available_on_all_aps: true
-      # band_selection: Dual band operation
-      # dns_rewrite:
-      #   dns_custom_nameservers: []
-      #   enabled: false
-      # dot11r:
-      #   adaptive: false
-      #   enabled: false
-      # dot11w:
-      #   enabled: true
-      #   required: false
-      # ip_assignment_mode: NAT mode
-      # mandatory_dhcp_enabled: false
-      # min_bitrate: 11
-      # per_client_bandwidth_limit_down: 0
-      # per_client_bandwidth_limit_up: 0
-      # per_ssid_bandwidth_limit_down: 0
-      # per_ssid_bandwidth_limit_up: 0
-      # speed_burst:
-      #   enabled: false
-      # ssid_admin_accessible: false
-
