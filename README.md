@@ -34,7 +34,7 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
     ```bash
     pip install --upgrade pip
     pip install pipenv
-    pipenv install --python 3.9
+    pipenv install --python 3.11
     pipenv install ansible boto3 botocore ciscoisesdk jmespath paramiko
     pipenv shell
     ```
@@ -80,14 +80,15 @@ Running `ansible-playbook ise_in_aws.yaml` will create :
     ```bash
     source ~/.secrets/aws.sh
     source ~/.secrets/ise.sh
+    source ~/.secrets/ise_repo.sh
     source ~/.secrets/meraki.sh
     ```
 
-4. Edit the `vars/main.yaml` and change the `meraki_org_name` to yours. You will want to review the other settings and change them to match your environment:
-    - your desired project name
-    - AMI identifiers for your AWS region if not `us-west-1`
+4. Review the `vars/*.yaml` configuration files and un/comment or edit them to suit your environment. You *must* edit the `vars/main.yaml` and change the `meraki_org_name` to your respective Meraki org. You will want to review the other settings and change them to match your environment:
+    - your desired `project_name`
+    - the AMI identifiers for your respective AWS region if not `us-west-1`
     - your desired network CIDR ranges
-    - your desired instance types
+    - your desired VM instance types
     - your Meraki vMX instance type and license (S/M/L)
     - your default password(s) or pre-shared keys
 
