@@ -1,4 +1,5 @@
 ---
+
 #
 # The default LAN Setting for a new network will be :
 #
@@ -6,15 +7,13 @@
 # |---------------------|-------------------|--------------
 # | Single LAN Settings | 192.168.128.0/24  | 192.168.128.1
 #
-# Timezones: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-#
 - name: Create a vMX Network '{{ meraki_org_name }}:{{ meraki_vmx_net_name }}'
   cisco.meraki.meraki_network:
     org_name: "{{ meraki_org_name }}"
     net_name: "{{ meraki_vmx_net_name }}"
     state: present
     type: appliance
-    timezone: America/Los_Angeles
+    timezone: America/Los_Angeles  # Timezones: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
     tags: ise, demo, lab, hub, mx
   register: vmx_network
 
@@ -53,10 +52,13 @@
       "tag:product": "vMX"
   register: vmx
 
-# - name: Show vmx
-#   ansible.builtin.debug: var=vmx
-- name: Claim vMX and Generate Token
-  when: vmx.instances | length <= 0
+- name: Show Existing vMX
+  when: vmx is defined
+  ansible.builtin.debug: var=vmx
+
+
+- name: Claim License, Generate Token, and Create vMX Instance
+  when: vmx.instances | count <= 0
   block:
     - name: Claim vMX Device & License
       ansible.builtin.uri:
@@ -134,15 +136,15 @@
           started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
       register: vmx
 
-  # - name: Show vmx
-  #   ansible.builtin.debug: var=vmx
+    - name: Show vMX Instance
+      ansible.builtin.debug: var=vmx
+
 
 #
 # ⚠ Requires the vMX to be initialized; Use `wait: yes` above
 # ⚠ Works with eni_id but not subnet_id
 #
 - name: Disable Source/Destination Check for vMX as NAT device!
-  when: vmx.instances[0].subnet_id is defined
   amazon.aws.ec2_eni:
     instance_id: "{{ vmx.instances[0].instance_id }}"
     eni_id: "{{ vmx.instances[0].network_interfaces[0].network_interface_id }}"
