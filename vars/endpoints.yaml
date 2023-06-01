@@ -3,7 +3,6 @@
 # Endpoints
 #
 endpoints:
-
 #------------------------------------------------------------------------------
 # Cameras
 #------------------------------------------------------------------------------
@@ -27,8 +26,7 @@ endpoints:
   endpoint_type: Camera
   description: Surveillance Camera
   staticGroupAssignment: true
-  groupId: 3a88eec0-8c00-11e6-996c-525400b48521  # Trendnet-Device
-
+  groupId: 3a88eec0-8c00-11e6-996c-525400b48521 # Trendnet-Device
 
 #------------------------------------------------------------------------------
 # IP Phones
@@ -38,8 +36,7 @@ endpoints:
   endpoint_type: IP Phone
   description: IP Phone
   staticGroupAssignment: true
-  groupId: 14f5cac0-8c00-11e6-996c-525400b48521  # Cisco-IP-Phone
-
+  groupId: 14f5cac0-8c00-11e6-996c-525400b48521 # Cisco-IP-Phone
 
 #------------------------------------------------------------------------------
 # Printers
@@ -49,7 +46,5 @@ endpoints:
   endpoint_type: Printer
   description: Printers
   staticGroupAssignment: true
-  groupId: 22c6c780-8c00-11e6-996c-525400b48521  # Epson-Device
+  groupId: 22c6c780-8c00-11e6-996c-525400b48521 # Epson-Device
 
-
-...
