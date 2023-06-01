@@ -22,6 +22,12 @@
         to_port: 22
         cidr_ip: 0.0.0.0/0
         rule_desc: Allow SSH from anywhere
+      # 💡 Uncomment *only* if you want ISE directly accessible from Internet
+      # - proto: tcp
+      #   from_port: 443
+      #   to_port: 443
+      #   cidr_ip: 0.0.0.0/0
+      #   rule_desc: Allow HTTPS from anywhere
       - proto: -1
         from_port: 0
         to_port: 0
@@ -44,7 +50,9 @@
   - name: Create ISE Instance in AWS
     loop: "{{ ise_nodes }}"
     amazon.aws.ec2_instance:
-      state: present
+      # state: present  # instances exist but not guarantee of state (e.g. running)
+      state: running # present + ensures the instances are running for public IP address!
+      # state: started  # running + waits for EC2 status checks; ~3 minutes per node
       region: "{{ aws_region }}"
       vpc_subnet_id: "{{ subnet_private.subnet.id }}"
       image_id: "{{ item.ami }}"
@@ -67,7 +75,7 @@
         hostname: "{{ item.name }}"
         project: "{{ project_name }}"
         started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
-        role: "{{ item.role | default( '') }}"
+        role: "{{ item.role | default('') }}"
         personas: "{{ item.personas | default( 'standalone') }}"
       user_data: "hostname={{ item.name | lower }}\nprimarynameserver={{ dns_server | default('208.67.222.222') }}\ndnsdomain={{ domain_name | default('demo.local') }}\nntpserver={{ ntp_server | default('time.nist.gov') }}\ntimezone={{ timezone | default('Etc/UTC') }}\nusername={{ ise_username }}\npassword={{ ise_password }}"
     register: instances
@@ -76,35 +84,33 @@
   #   ansible.builtin.debug: var=instances
 
 
-  #
-  # Advertise the same internal IP for public and private DNS
-  #
   - name: Add public DNS entry for the ISE node(s)
     when: domain_name is defined
-    loop: "{{ ise_nodes }}"
+    loop: "{{ instances.results[0].instances }}"
     community.aws.route53:
       state: present
       zone: "{{ domain_name }}"
-      record: "{{ item.name }}.{{ domain_name }}"
+      record: "{{ item.tags.Name }}.{{ domain_name }}"
       overwrite: yes
       private_zone: no
       type: A
       ttl: 7200
-      value: "{{ item.private_ip }}"
+      value: "{{ item.public_ip_address }}"
       wait: no
+
 
   - name: Add private DNS entry for the ISE node(s)
     when: domain_name is defined
-    loop: "{{ ise_nodes }}"
+    loop: "{{ instances.results[0].instances }}"
     community.aws.route53:
       state: present
       zone: "{{ domain_name }}"
-      record: "{{ item.name }}.{{ domain_name }}"
+      record: "{{ item.tags.Name }}.{{ domain_name }}"
       overwrite: yes
       private_zone: yes
       type: A
       ttl: 7200
-      value: "{{ item.private_ip }}"
+      value: "{{ item.private_ip_address }}"
       wait: no
 
 
