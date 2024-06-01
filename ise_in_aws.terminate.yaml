@@ -130,7 +130,6 @@
           - {{ security_groups.security_groups | length }} Security Groups
           - {{ ec2_instances.instances | length }} EC2 Instances
           - {{ enis.network_interfaces | default([]) | length }} ENIs
-          # - "{{ dhcp_info is defined | ternary('1','0') }} DHCP Info"
           - {{ meraki_networks.meraki_response | length }} Meraki Networks
           - vMX Network: {{ vmx_network.name }}
 
