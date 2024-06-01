@@ -2,23 +2,16 @@
 #
 # Test for ISE Application Server Initialization
 #
-
-  - ansible.builtin.debug: var=ansible_host
-
-
-  - name: Wait for ISE App Server (GUI) | {{ inventory_hostname }}
-    delegate_to: localhost
-    ansible.builtin.uri:
-      url: https://{{ ansible_host }}/admin/login.jsp
-      method: GET
-      follow_redirects: safe
-      timeout: 10
-      validate_certs: no
-      return_content: no
-    register: result
-    until: result.status == 200
-    retries: 1000
-    delay: 10
-
-
-...
+- name: Wait for ISE App Server (GUI) | {{ inventory_hostname }}
+  delegate_to: localhost
+  ansible.builtin.uri:
+    url: https://{{ ansible_host }}/admin/login.jsp
+    method: GET
+    follow_redirects: safe
+    timeout: 10
+    validate_certs: no
+    return_content: no
+  register: result
+  until: result.status == 200
+  retries: 1000
+  delay: 10
