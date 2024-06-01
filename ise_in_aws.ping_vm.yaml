@@ -1,108 +1,98 @@
 ---
+- name: Create SG-Ping+SSH Security Group
+  amazon.aws.ec2_group:
+    name: SG-Ping+SSH
+    description: Allow Ping and SSH to Linux VM
+    vpc_id: "{{ vpc.vpc.id }}"
+    region: "{{ aws_region }}"
+    rules:
+      - proto: icmp
+        from_port: -1
+        to_port: -1
+        cidr_ip: "{{ aws_public_access_cidr}}" # any
+        rule_desc: Allow ICMP Ping
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: "{{ aws_public_access_cidr}}" # any
+        rule_desc: Allow SSH
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0 # any
+    tags:
+      Name: SG-Ping+SSH
+      project: "{{ project_name }}"
+      started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
+  register: sg_ping_ssh
 
+#
+#  💡 Must use the community.aws.ec2_instance module which supports the
+# `user_data` field for inclusion of the Meraki vMX Authentication Token!
+#
+- name: Create Ping_VM
+  community.aws.ec2_instance:
+    state: running
+    name: "{{ pingvm_name }}"
+    region: "{{ aws_region }}"
+    vpc_subnet_id: "{{ subnet_private.subnet.id }}"
+    image_id: "{{ aws_linux_ami }}"
+    instance_type: "{{ aws_linux_instance_type }}"
+    key_name: "{{ ssh_keypair_name }}" # SSH Keypair Name
+    security_group: "{{ sg_ping_ssh.group_name }}"
+    network:
+      assign_public_ip: yes
+      delete_on_termination: yes
+      private_ip_address: "{{ pingvm_private_ip }}"
+    volumes:
+      - device_name: /dev/xvda
+        ebs:
+          delete_on_termination: true
+          volume_size: 10
+    wait: yes
+    tags:
+      Name: "{{ pingvm_name }}"
+      project: "{{ project_name }}"
+      started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
+  register: ping_vm
 
-  - name: Create SG-Ping+SSH Security Group
-    amazon.aws.ec2_group:
-      name: SG-Ping+SSH
-      description: Allow Ping and SSH to Linux VM
-      vpc_id: "{{ vpc.vpc.id }}"
-      region: "{{ aws_region }}"
-      rules:
-        - proto: icmp
-          from_port: -1
-          to_port:  -1
-          cidr_ip: "{{ aws_public_access_cidr}}"    # any
-          rule_desc: Allow ICMP Ping
-        - proto: tcp
-          from_port: 22
-          to_port: 22
-          cidr_ip: "{{ aws_public_access_cidr}}"    # any
-          rule_desc: Allow SSH
-      rules_egress:
-        - proto: all
-          cidr_ip: 0.0.0.0/0    # any
-      tags:
-        Name: SG-Ping+SSH
-        project: "{{ project_name }}"
-        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
-    register: sg_ping_ssh
+- name: Show SSH Commands for Instance
+  ansible.builtin.debug:
+    msg: |
+       
+               _
+           ,--(_)
+         _/ ;-._\    ping {{ ping_vm.instances[0].public_ip_address }}
+        (_)(   ) )   ping {{ ping_vm.instances[0].private_ip_address }}
+          \ ;-'_/    ssh -i {{ ssh_keypair_private_key }} ec2-user@{{ ping_vm.instances[0].private_ip_address }}
+           `--(_)
+       
+       
 
-  # - name: Show sg_ping_ssh
-  #   ansible.builtin.debug: var=sg_ping_ssh
+#
+# Advertise the same internal IP for public and private DNS
+#
+- name: Add public DNS entry for the PingVM
+  when: domain_name is defined
+  community.aws.route53:
+    state: present
+    zone: "{{ domain_name }}"
+    record: "ping.{{ domain_name }}"
+    overwrite: yes
+    private_zone: no
+    type: A
+    ttl: 7200
+    value: "{{ pingvm_private_ip }}"
+    wait: no
 
-
-  #
-  #  💡 Must use the community.aws.ec2_instance module which supports the
-  # `user_data` field for inclusion of the Meraki vMX Authentication Token!
-  #
-  - name: Create Ping_VM
-    community.aws.ec2_instance:
-      state: running
-      name: "{{ pingvm_name }}"
-      region: "{{ aws_region }}"
-      vpc_subnet_id: "{{ subnet_private.subnet.id }}"
-      image_id: "{{ aws_linux_ami }}"
-      instance_type: "{{ aws_linux_instance_type }}"
-      key_name: "{{ ssh_keypair_name }}"   # SSH Keypair Name
-      security_group: "{{ sg_ping_ssh.group_name }}"
-      network:
-        assign_public_ip: yes
-        delete_on_termination: yes
-        private_ip_address: "{{ pingvm_private_ip }}"
-      volumes:
-        - device_name: /dev/xvda
-          ebs:
-            delete_on_termination: true
-            volume_size: 10
-      wait: yes
-      tags:
-        Name: "{{ pingvm_name }}"
-        project: "{{ project_name }}"
-        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
-    register: ping_vm
-
-  - name: Show SSH Commands for Instance
-    ansible.builtin.debug:
-      msg: |
-         
-                 _
-             ,--(_)
-           _/ ;-._\    ping {{ ping_vm.instances[0].public_ip_address }}
-          (_)(   ) )   ping {{ ping_vm.instances[0].private_ip_address }}
-            \ ;-'_/    ssh -i {{ ssh_keypair_private_key }} ec2-user@{{ ping_vm.instances[0].private_ip_address }}
-             `--(_)
-         
-         
-
-
-  #
-  # Advertise the same internal IP for public and private DNS
-  #
-  - name: Add public DNS entry for the PingVM
-    when: domain_name is defined
-    community.aws.route53:
-      state: present
-      zone: "{{ domain_name }}"
-      record: "ping.{{ domain_name }}"
-      overwrite: yes
-      private_zone: no
-      type: A
-      ttl: 7200
-      value: "{{ pingvm_private_ip }}"
-      wait: no
-
-  - name: Add private DNS entry for the PingVM
-    when: domain_name is defined
-    community.aws.route53:
-      state: present
-      zone: "{{ domain_name }}"
-      record: "ping.{{ domain_name }}"
-      overwrite: yes
-      private_zone: yes
-      type: A
-      ttl: 7200
-      value: "{{ pingvm_private_ip }}"
-      wait: no
-
-
-...
+- name: Add private DNS entry for the PingVM
+  when: domain_name is defined
+  community.aws.route53:
+    state: present
+    zone: "{{ domain_name }}"
+    record: "ping.{{ domain_name }}"
+    overwrite: yes
+    private_zone: yes
+    type: A
+    ttl: 7200
+    value: "{{ pingvm_private_ip }}"
+    wait: no
