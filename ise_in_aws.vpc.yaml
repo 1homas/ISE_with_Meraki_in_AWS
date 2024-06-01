@@ -1,125 +1,79 @@
 ---
+- name: Create VPC
+  amazon.aws.ec2_vpc_net:
+    state: present
+    name: "{{ aws_vpc_name }}"
+    region: "{{ aws_region }}"
+    cidr_block: "{{ aws_vpc_cidr }}"
+    tags:
+      Name: "vpc_{{ project_name }}"
+      project: "{{ project_name }}"
+      started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
+  register: vpc
 
+- name: Create an Internet Gateway to connect VPC to Internet
+  community.aws.ec2_vpc_igw:
+    state: present
+    vpc_id: "{{ vpc.vpc.id }}"
+    tags:
+      Name: "igw_{{ project_name }}"
+      project: "{{ project_name }}"
+      started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
+  register: igw
 
-  # - name: Show VPC(s)
-  #   amazon.aws.ec2_vpc_net:
-  #     name: "{{ aws_vpc_name }}"
-  #     cidr_block:  "{{ aws_vpc_cidr }}"
-  #     region: "{{ aws_region }}"
-  #   register: vpc
+- name: Create Public_Subnet
+  amazon.aws.ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ aws_public_subnet_cidr }}"
+    region: "{{ aws_region }}"
+    map_public: yes # assigned public IP address by default
+    tags:
+      Name: Public_Subnet
+      project: "{{ project_name }}"
+      started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
+  register: subnet_public
 
-  - name: Create VPC
-    amazon.aws.ec2_vpc_net:
-      state: present
-      name: "{{ aws_vpc_name }}"
-      region: "{{ aws_region }}"
-      cidr_block:  "{{ aws_vpc_cidr }}"
-      tags:
-        Name: "vpc_{{ project_name }}"
-        project: "{{ project_name }}"
-        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
-    register: vpc
+- name: Create Private_Subnet
+  amazon.aws.ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ aws_private_subnet_cidr }}"
+    region: "{{ aws_region }}"
+    tags:
+      Name: Private_Subnet
+      project: "{{ project_name }}"
+      started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
+  register: subnet_private
 
-  # - name: Show vpc
-  #   ansible.builtin.debug: var=vpc
+- name: Create Public Route Table; Add Route from VPC to Internet Gateway
+  community.aws.ec2_vpc_route_table:
+    state: present
+    vpc_id: "{{ vpc.vpc.id }}"
+    subnets:
+      - "{{ subnet_public.subnet.id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.gateway_id }}"
+    tags:
+      Name: RT_Public
+      project: "{{ project_name }}"
+      started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
+  register: rt_public
 
-
-
-
-  - name: Create an Internet Gateway to connect VPC to Internet
-    community.aws.ec2_vpc_igw:
-      state: present
-      vpc_id: "{{ vpc.vpc.id }}"
-      tags:
-        Name: "igw_{{ project_name }}"
-        project: "{{ project_name }}"
-        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
-    register: igw
-
-  # - name: Show igw
-  #   ansible.builtin.debug: var=igw
-
-
-
-
-  - name: Create Public_Subnet
-    amazon.aws.ec2_vpc_subnet:
-      state: present
-      vpc_id: "{{ vpc.vpc.id }}"
-      cidr: "{{ aws_public_subnet_cidr }}"
-      region: "{{ aws_region }}"
-      map_public: yes       # assigned public IP address by default
-      tags:
-        Name: Public_Subnet
-        project: "{{ project_name }}"
-        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
-    register: subnet_public
-
-  # - name: Show subnet_public
-  #   ansible.builtin.debug: var=subnet_public
-
-
-
-
-  - name: Create Private_Subnet
-    amazon.aws.ec2_vpc_subnet:
-      state: present
-      vpc_id: "{{ vpc.vpc.id }}"
-      cidr: "{{ aws_private_subnet_cidr }}"
-      region: "{{ aws_region }}"
-      tags:
-        Name: Private_Subnet
-        project: "{{ project_name }}"
-        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
-    register: subnet_private
-
-  # - name: Show subnet_private
-  #   ansible.builtin.debug: var=subnet_private
-
-
-
-
-  - name: Create Public Route Table; Add Route from VPC to Internet Gateway
-    community.aws.ec2_vpc_route_table:
-      state: present
-      vpc_id: "{{ vpc.vpc.id }}"
-      subnets:
-        - "{{ subnet_public.subnet.id }}"
-      routes:
-        - dest: 0.0.0.0/0
-          gateway_id: "{{ igw.gateway_id }}"
-      tags:
-        Name: RT_Public
-        project: "{{ project_name }}"
-        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
-    register: rt_public
-
-  # - name: Show rt_public
-  #   ansible.builtin.debug: var=rt_public
-
-
-
-
-  - name: Create Private Route Table
-    community.aws.ec2_vpc_route_table:
-      vpc_id: "{{ vpc.vpc.id }}"
-      subnets:
-        - "{{ subnet_private.subnet.id }}"
-      routes:
-        - dest: 0.0.0.0/0
-          gateway_id: "{{ igw.gateway_id }}"
-        # 💡 Update this with other VPN networks after vMX creation! 💡
-        # - dest: 192.168.0.0/16
-        #   instance_id: "{{ vmx.instance_id }}"
-      tags:
-        Name: RT_Private
-        project: "{{ project_name }}"
-        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
-    register: rt_private
-
-  # - name: Show rt_private
-  #   ansible.builtin.debug: var=rt_private
-
-
-
-...
+- name: Create Private Route Table
+  community.aws.ec2_vpc_route_table:
+    vpc_id: "{{ vpc.vpc.id }}"
+    subnets:
+      - "{{ subnet_private.subnet.id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.gateway_id }}"
+      # 💡 Update this with other VPN networks after vMX creation! 💡
+      # - dest: 192.168.0.0/16
+      #   instance_id: "{{ vmx.instance_id }}"
+    tags:
+      Name: RT_Private
+      project: "{{ project_name }}"
+      started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
+  register: rt_private

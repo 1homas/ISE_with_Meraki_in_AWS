@@ -1,17 +1,15 @@
 ---
-
-
-  #
-  # ⚠ Limit CIDR IPs to the Lab Network to Prevent Public Internet Access!
-  #
-  - name: Create SG-ISE Security Group
-    amazon.aws.ec2_group:
-      name: SG-ISE
-      description: SG-ISE
-      # vpc_id: "{{ vpcs.vpcs[0].id }}"
-      vpc_id: "{{ vpc.vpc.id }}"
-      region: "{{ aws_region }}"
-      rules:
+#
+# ⚠ Limit CIDR IPs to the Lab Network to Prevent Public Internet Access!
+#
+- name: Create SG-ISE Security Group
+  amazon.aws.ec2_group:
+    name: SG-ISE
+    description: SG-ISE
+    # vpc_id: "{{ vpcs.vpcs[0].id }}"
+    vpc_id: "{{ vpc.vpc.id }}"
+    region: "{{ aws_region }}"
+    rules:
       - proto: -1
         from_port: 0
         to_port: 0
@@ -33,102 +31,95 @@
         to_port: 0
         cidr_ip: 192.168.0.0/16
         rule_desc: Allow all traffic from on-premises
-      rules_egress:
-        - proto: all
-          cidr_ip: 0.0.0.0/0    # any
-          rule_desc: Allow All
-      tags:
-        Name: SG-ISE
-        project: "{{ project_name }}"
-        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
-    register: sg_ise
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0 # any
+        rule_desc: Allow All
     tags:
+      Name: SG-ISE
+      project: "{{ project_name }}"
+      started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
+  register: sg_ise
+  tags:
     - sg
     - security_group
 
+- name: Create ISE Instance in AWS
+  loop: "{{ ise_nodes }}"
+  amazon.aws.ec2_instance:
+    # state: present  # instances exist but not guarantee of state (e.g. running)
+    state: running # present + ensures the instances are running for public IP address!
+    # state: started  # running + waits for EC2 status checks; ~3 minutes per node
+    region: "{{ aws_region }}"
+    vpc_subnet_id: "{{ subnet_private.subnet.id }}"
+    image_id: "{{ item.ami }}"
+    instance_type: "{{ item.instance_type }}"
+    key_name: "{{ ssh_keypair_name }}"
+    network:
+      assign_public_ip: yes
+      delete_on_termination: yes
+      private_ip_address: "{{ item.private_ip}}"
+    security_group: "{{ sg_ise.group_id }}"
+    volumes:
+      - device_name: /dev/sda1
+        ebs:
+          delete_on_termination: true
+          volume_size: "{{ item.volume_size | default( 300 ) }}"
+    wait: yes
+    tags:
+      Name: "{{ item.name }}"
+      product: "ISE"
+      hostname: "{{ item.name }}"
+      project: "{{ project_name }}"
+      started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
+      role: "{{ item.role | default('') }}"
+      personas: "{{ item.personas | default( 'standalone') }}"
+    user_data: "hostname={{ item.name | lower }}\nprimarynameserver={{ dns_server | default('208.67.222.222') }}\ndnsdomain={{ domain_name | default('demo.local') }}\nntpserver={{ ntp_server | default('time.nist.gov') }}\ntimezone={{ timezone | default('Etc/UTC') }}\nusername={{ ise_username }}\npassword={{ ise_password }}"
+  register: instances
 
-  - name: Create ISE Instance in AWS
-    loop: "{{ ise_nodes }}"
-    amazon.aws.ec2_instance:
-      # state: present  # instances exist but not guarantee of state (e.g. running)
-      state: running # present + ensures the instances are running for public IP address!
-      # state: started  # running + waits for EC2 status checks; ~3 minutes per node
-      region: "{{ aws_region }}"
-      vpc_subnet_id: "{{ subnet_private.subnet.id }}"
-      image_id: "{{ item.ami }}"
-      instance_type: "{{ item.instance_type }}"
-      key_name: "{{ ssh_keypair_name }}"
-      network:
-        assign_public_ip: yes
-        delete_on_termination: yes
-        private_ip_address: "{{ item.private_ip}}"
-      security_group: "{{ sg_ise.group_id }}"
-      volumes:
-        - device_name: /dev/sda1
-          ebs:
-            delete_on_termination: true
-            volume_size: "{{ item.volume_size | default( 300 ) }}"
-      wait: yes
-      tags:
-        Name: "{{ item.name }}"
-        product: "ISE"
-        hostname: "{{ item.name }}"
-        project: "{{ project_name }}"
-        started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
-        role: "{{ item.role | default('') }}"
-        personas: "{{ item.personas | default( 'standalone') }}"
-      user_data: "hostname={{ item.name | lower }}\nprimarynameserver={{ dns_server | default('208.67.222.222') }}\ndnsdomain={{ domain_name | default('demo.local') }}\nntpserver={{ ntp_server | default('time.nist.gov') }}\ntimezone={{ timezone | default('Etc/UTC') }}\nusername={{ ise_username }}\npassword={{ ise_password }}"
-    register: instances
+# - name: Show ISE Instances
+#   ansible.builtin.debug: var=instances
 
-  # - name: Show ISE Instances
-  #   ansible.builtin.debug: var=instances
+- name: Add public DNS entry for the ISE node(s)
+  when: domain_name is defined
+  loop: "{{ instances.results[0].instances }}"
+  community.aws.route53:
+    state: present
+    zone: "{{ domain_name }}"
+    record: "{{ item.tags.Name }}.{{ domain_name }}"
+    overwrite: yes
+    private_zone: no
+    type: A
+    ttl: 7200
+    value: "{{ item.public_ip_address }}"
+    wait: no
 
+- name: Add private DNS entry for the ISE node(s)
+  when: domain_name is defined
+  loop: "{{ instances.results[0].instances }}"
+  community.aws.route53:
+    state: present
+    zone: "{{ domain_name }}"
+    record: "{{ item.tags.Name }}.{{ domain_name }}"
+    overwrite: yes
+    private_zone: yes
+    type: A
+    ttl: 7200
+    value: "{{ item.private_ip_address }}"
+    wait: no
 
-  - name: Add public DNS entry for the ISE node(s)
-    when: domain_name is defined
-    loop: "{{ instances.results[0].instances }}"
-    community.aws.route53:
-      state: present
-      zone: "{{ domain_name }}"
-      record: "{{ item.tags.Name }}.{{ domain_name }}"
-      overwrite: yes
-      private_zone: no
-      type: A
-      ttl: 7200
-      value: "{{ item.public_ip_address }}"
-      wait: no
-
-
-  - name: Add private DNS entry for the ISE node(s)
-    when: domain_name is defined
-    loop: "{{ instances.results[0].instances }}"
-    community.aws.route53:
-      state: present
-      zone: "{{ domain_name }}"
-      record: "{{ item.tags.Name }}.{{ domain_name }}"
-      overwrite: yes
-      private_zone: yes
-      type: A
-      ttl: 7200
-      value: "{{ item.private_ip_address }}"
-      wait: no
-
-
-  - name: Show SSH Commands for ISE Instances
-    loop: "{{ ise_nodes }}"
-    ansible.builtin.debug:
-      msg: |
-         
-                .
-               /|\
-              /|||\
-           @ /|||||\ @
-          @  \|/ \|/  @   ping {{ item.private_ip }}
-          @           @   ssh -i {{ ssh_keypair_private_key }} {{ ise_username }}@{{ item.private_ip }}
-           @.       .@
-            `Y@ @ @Y`
-         
-         
-
-
-...
+- name: Show SSH Commands for ISE Instances
+  loop: "{{ ise_nodes }}"
+  ansible.builtin.debug:
+    msg: |
+       
+              .
+             /|\
+            /|||\
+         @ /|||||\ @
+        @  \|/ \|/  @   ping {{ item.private_ip }}
+        @           @   ssh -i {{ ssh_keypair_private_key }} {{ ise_username }}@{{ item.private_ip }}
+         @.       .@
+          `Y@ @ @Y`
+       
+       

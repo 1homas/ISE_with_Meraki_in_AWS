@@ -29,27 +29,24 @@
   hosts: ise
   gather_facts: no
   vars_files:
-  - vars/main.yaml
+    - vars/main.yaml
   tasks:
+    - name: ISE CLI Command | {{ cmd }}
+      vars:
+        ansible_connection: ansible.netcommon.network_cli
+        ansible_network_os: cisco.ios.ios
+        ansible_ssh_user: "{{ lookup('env','ISE_USERNAME') }}"
+        ansible_ssh_private_key_file: "{{ ssh_keypair_private_key }}"
+        ansible_become: no
+        cmd: "{{ lookup('env','cmd') | default('show version', true) }}"
+      cisco.ios.ios_command:
+        commands:
+          - "{{ cmd }}"
+          - exit # 💡 Always `exit` after commands to prevent hanging sessions
+      register: out
 
-  - name: ISE CLI Command | {{ cmd }}
-    vars:
-      ansible_connection: ansible.netcommon.network_cli
-      ansible_network_os: cisco.ios.ios
-      ansible_ssh_user: "{{ lookup('env','ISE_USERNAME') }}"
-      ansible_ssh_private_key_file: "{{ ssh_keypair_private_key }}"
-      ansible_become: no
-      cmd: "{{ lookup('env','cmd') | default('show version', true) }}"
-    cisco.ios.ios_command:
-      commands:
-      - "{{ cmd }}"
-      - exit    # 💡 Always `exit` after commands to prevent hanging sessions
-    register: out
-
-  - name: Output | {{ cmd }}
-    when: out is defined and out.stdout | count > 0
-    ansible.builtin.debug:
-      msg:
-      - "{{ out.stdout | replace('\\n\\n','\\n') }}"
-
-...
+    - name: Output | {{ cmd }}
+      when: out is defined and out.stdout | count > 0
+      ansible.builtin.debug:
+        msg:
+          - "{{ out.stdout | replace('\\n\\n','\\n') }}"

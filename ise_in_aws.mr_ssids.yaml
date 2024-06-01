@@ -1,5 +1,4 @@
 ---
-
 #------------------------------------------------------------------------------
 # .corp : 802.1X with ISE from Secure Cisco Meraki Wireless with ISE
 #------------------------------------------------------------------------------
@@ -13,18 +12,18 @@
     number: 0
     enabled: yes
     visible: yes
-    auth_mode: 8021x-radius         # [open|psk|open-with-radius|8021x-meraki|8021x-radius]
-    encryption_mode: wpa            # [wpa|eap|wpa-eap]
-    wpa_encryption_mode: WPA2 only  # 🛑 ipsk-with-radius NOT SUPPORTED! [open|psk|open-with-radius|8021x-meraki|8021x-radius]
+    auth_mode: 8021x-radius # [open|psk|open-with-radius|8021x-meraki|8021x-radius]
+    encryption_mode: wpa # [wpa|eap|wpa-eap]
+    wpa_encryption_mode: WPA2 only # 🛑 ipsk-with-radius NOT SUPPORTED! [open|psk|open-with-radius|8021x-meraki|8021x-radius]
     splash_page: None
     radius_servers:
-    - host: 172.31.2.11
-      port: 1812
-      secret: "{{ radius_secret }}"
+      - host: 172.31.2.11
+        port: 1812
+        secret: "{{ radius_secret }}"
     radius_accounting_servers:
-    - host: 172.31.2.11
-      port: 1813
-      secret: "{{ radius_secret }}"
+      - host: 172.31.2.11
+        port: 1813
+        secret: "{{ radius_secret }}"
     available_on_all_aps: true
     ip_assignment_mode: NAT mode
 
@@ -65,7 +64,6 @@
     #   enabled: false
     # ssid_admin_accessible: false
 
-
 #------------------------------------------------------------------------------
 # .iot : MAB from Secure Cisco Meraki Wireless with ISE
 #
@@ -82,18 +80,18 @@
     number: 1
     enabled: yes
     visible: yes
-    auth_mode: 8021x-radius         # [open|psk|open-with-radius|8021x-meraki|8021x-radius]
-    encryption_mode: wpa            # [wpa|eap|wpa-eap]
-    wpa_encryption_mode: WPA2 only  # 🛑 ipsk-with-radius NOT SUPPORTED! [open|psk|open-with-radius|8021x-meraki|8021x-radius]
+    auth_mode: 8021x-radius # [open|psk|open-with-radius|8021x-meraki|8021x-radius]
+    encryption_mode: wpa # [wpa|eap|wpa-eap]
+    wpa_encryption_mode: WPA2 only # 🛑 ipsk-with-radius NOT SUPPORTED! [open|psk|open-with-radius|8021x-meraki|8021x-radius]
     splash_page: None
     radius_servers:
-    - host: 172.31.2.11
-      port: 1812
-      secret: "{{ radius_secret }}"
+      - host: 172.31.2.11
+        port: 1812
+        secret: "{{ radius_secret }}"
     radius_accounting_servers:
-    - host: 172.31.2.11
-      port: 1813
-      secret: "{{ radius_secret }}"
+      - host: 172.31.2.11
+        port: 1813
+        secret: "{{ radius_secret }}"
     available_on_all_aps: true
     ip_assignment_mode: NAT mode
 
@@ -168,15 +166,15 @@
     enabled: no
     visible: true
     available_on_all_aps: true
-    auth_mode: open-with-radius     # [open|psk|open-with-radius|8021x-meraki|8021x-radius]
+    auth_mode: open-with-radius # [open|psk|open-with-radius|8021x-meraki|8021x-radius]
     radius_servers:
-    - host: 172.31.2.11
-      port: 1812
-      secret: "{{ radius_secret }}"
+      - host: 172.31.2.11
+        port: 1812
+        secret: "{{ radius_secret }}"
     radius_accounting_servers:
-    - host: 172.31.2.11
-      port: 1813
-      secret: "{{ radius_secret }}"
+      - host: 172.31.2.11
+        port: 1813
+        secret: "{{ radius_secret }}"
     radius_coa_enabled: true
     radius_accounting_enabled: true
     ip_assignment_mode: NAT mode
@@ -184,7 +182,7 @@
     # splash_timeout: 1440 minutes  # 🛑 Unsupported
     walled_garden_enabled: true
     walled_garden_ranges:
-    - 172.31.2.11/32
+      - 172.31.2.11/32
 #     # 🛑 ▼▼▼ Unsupported with Ansible ▼▼▼
 #     radius_attribute_for_group_policies: Airespace-ACL-Name   # 🛑 Unsupported
 #     radius_authentication_nas_id: $NODE_MAC$:$VAP_NUM$        # 🛑 Unsupported
