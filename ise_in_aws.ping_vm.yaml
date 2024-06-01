@@ -1,7 +1,7 @@
 ---
-- name: Create SG-Ping+SSH Security Group
+- name: Create sg_ping_ssh Security Group
   amazon.aws.ec2_group:
-    name: SG-Ping+SSH
+    name: sg_ping_ssh
     description: Allow Ping and SSH to Linux VM
     vpc_id: "{{ vpc.vpc.id }}"
     region: "{{ aws_region }}"
@@ -9,18 +9,18 @@
       - proto: icmp
         from_port: -1
         to_port: -1
-        cidr_ip: "{{ aws_public_access_cidr}}" # any
+        cidr_ip: 0.0.0.0/0 # any
         rule_desc: Allow ICMP Ping
       - proto: tcp
         from_port: 22
         to_port: 22
-        cidr_ip: "{{ aws_public_access_cidr}}" # any
+        cidr_ip: 0.0.0.0/0 # any
         rule_desc: Allow SSH
     rules_egress:
       - proto: all
         cidr_ip: 0.0.0.0/0 # any
     tags:
-      Name: SG-Ping+SSH
+      Name: sg_ping_ssh
       project: "{{ project_name }}"
       started: "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
   register: sg_ping_ssh
