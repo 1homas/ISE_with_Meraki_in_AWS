@@ -1,0 +1,67 @@
+{##############################################################################
+  Template a table from a list of dicts with auto-sized columns.
+  Uses all of the columns by default if not specified by `head[]`
+  Required Variables:
+  - rows[] : a list of dicts
+  Optional Variables:
+  - head[] : the list of columns by name (headers) to show from the rows.
+  - hide[] : the list of columns to hide by name
+  - maxw : the maximum width (int) of all columns or they are truncated with '…'
+##############################################################################}
+{% if head is undefined %}
+{%   set head = rows[0] | dict2items | community.general.json_query('[].key') %}
+{% endif %}
+{##############################################################################
+  Remove any columns in the `hide` list
+  Use '_' variable to increase scope beyond if and for blocks!
+##############################################################################}
+{% if hide is defined %}
+{%   for col in hide %}
+{%     set _ = head.remove(col) %}
+{%   endfor %}
+{% endif %}
+{##############################################################################
+  Set missing column values empty string ('')
+##############################################################################}
+{% for row in rows %}
+{% for col in head %}
+{% set row = row.setdefault(col, '') %}
+{% endfor %}
+{% endfor %}
+{##############################################################################
+  head_widths{}: the maximum width of each column 
+  - include (union) the header name in case it is longer than the values
+  - convert to string because booleans have no length
+##############################################################################}
+{% set head_widths = dict() %}
+{% for col in head %}
+{%   set head_widths = head_widths.update( { col : rows | map(attribute=col) | union([col]) | map('string') | map('length') | max } )  %}
+{% endfor %}
+{##############################################################################
+  Ensure column widths do not exceed the max column width (maxw)
+##############################################################################}
+{% if maxw is undefined %}
+{%   set maxw = 255 %}
+{% endif %}
+{% for key in head_widths %}
+{%   set head_widths = head_widths.update( { key : ([head_widths[key],maxw]) | min } )  %}
+{% endfor %}
+{##############################################################################
+  Align columns by type: text is <left (default), numbers and bools are right>
+##############################################################################}
+{% set head_aligns = dict() %}
+{% for col in head %}
+{%   if rows[0][col] is number %}
+{%     set head_aligns = head_aligns.update( { col : '>' } )  %}
+{%   else %}
+{%     set head_aligns = head_aligns.update( { col : '<' } )  %}
+{%   endif %}
+{% endfor %}
+{% for col in head %}
+| {{ '{:^{w}}'.format(col|truncate(head_widths[col],true,'…',0), w=head_widths[col]) }} {% endfor %}|
+{% for col in head %}
+| {{ '{:^{w}}'.format(('-'*head_widths[col])|truncate(maxw,true,'…',0), w=head_widths[col]) }} {% endfor %}|
+{% for row in rows %}
+{% for col in head %}
+| {{ '{:{a}{w}}'.format(row[col]|string|truncate(head_widths[col],true,'…',0), a=head_aligns[col], w=head_widths[col]) }} {% endfor %}|
+{% endfor %}
