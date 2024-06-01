@@ -17,11 +17,21 @@
   gather_facts: no
 
   pre_tasks:
-    - name: Assert Required Environment Variables
+
+    - name: Check Required Environment Variables
+      delegate_to: localhost
+      vars:
+        env_vars:
+          - MERAKI_DASHBOARD_API_KEY
+      loop: "{{ env_vars }}"
       ansible.builtin.assert:
-        that: lookup('env', 'MERAKI_DASHBOARD_API_KEY')
-          or lookup('env', 'EC2_REGION')
-        fail_msg: ❌ Please set environment variable MERAKI_DASHBOARD_API_KEY
+        that:
+          - lookup('env', item) # is defined does not work
+        fail_msg: |
+          X Please set the required environment variable {{ item }} in your terminal:
+            export {{ item }}=__________
+        success_msg: |
+          ✔ Environment variable {{ item }} is set
 
   tasks:
     - name: Get Organizations for user's authentication key
@@ -52,11 +62,6 @@
         organizationId: "{{ item }}"
       register: results
 
-    # - name: Debug vars
-    #   ansible.builtin.debug:
-    #     msg: |
-    #       results.results.meraki_response: {{ results.results | community.general.json_query('[*].meraki_response')  | first | default('UNDEFINED') }}
-
     - name: Show Meraki Org Admins
       delegate_to: localhost
       vars:
@@ -74,46 +79,26 @@
         organizationId: "{{ item }}"
       register: results
 
+    - name: Set networks
+      ansible.builtin.set_fact:
+        networks: "{{ results.results[0].meraki_response }}"
+
     - name: Show All Networks
       delegate_to: localhost
       vars:
         hide: ["enrollmentString", "url"]
         maxw: 30
-        # rows: "{{ results.meraki_response }}"
-        rows: "{{ results.results | community.general.json_query('[*].meraki_response') | first }}"
+        rows: "{{ networks }}"
+        # rows: "{{ results.results | community.general.json_query('[*].meraki_response') | first }}"
         temp: "{{ lookup('template', 'templates/list_of_dicts.j2') }}"
       ansible.builtin.debug:
         msg: "{{ temp }}"
-
-    - name: Set network_names
-      ansible.builtin.set_fact:
-        network_names: "{{ results.meraki_response | community.general.json_query('[*].name') }}"
 
     - name: Get All Devices in the Organization
       delegate_to: localhost
       loop: "{{ org_ids }}"
       cisco.meraki.devices_info:
         organizationId: "{{ item }}"
-        # optional filters:
-        # networkIds: []
-        # productTypes: []
-        # tags: []
-        # perPage: 0
-        # startingAfter: string
-        # endingBefore: string
-        # configurationUpdatedAfter: string
-        # tagsFilterType: string
-        # name: string
-        # mac: string
-        # serial: string
-        # model: string
-        # macs: []
-        # serials: []
-        # sensorMetrics: []
-        # sensorAlertProfileIds: []
-        # models: []
-        # total_pages: -1
-        # direction: next
       register: results
 
     - name: Show All Meraki Devices
@@ -126,3 +111,87 @@
         temp: "{{ lookup('template', 'templates/list_of_dicts.j2') }}"
       ansible.builtin.debug:
         msg: "{{ temp }}"
+
+    - name: Get All Wireless SSIDs
+      loop: "{{ networks | selectattr('productTypes', 'contains', 'wireless') }}"
+      cisco.meraki.networks_wireless_ssids_info:
+        networkId: "{{ item.id }}"
+      register: ssid_results
+
+    - name: Set networks_wireless_ssids
+      ansible.builtin.set_fact:
+        networks_wireless_ssids: "{{ ssid_results.results | community.general.json_query('[*].meraki_response') | first }}"
+
+    - name: Show Wireless SSIDs' General Configuration
+      delegate_to: localhost
+      vars:
+        # hide: ["address", "firmware", "lat", "lng", "notes", "url"]
+        head:
+          - enabled
+          - number
+          - name
+          - visible
+          - authMode
+          - authModeencryptionMode
+          - wpaEncryptionMode
+          - availableOnAllAps
+          - splashPage
+          - namedVlans
+          - ipAssignmentMode
+        maxw: 30
+        # rows: "{{ results.meraki_response }}"
+        # rows: "{{ ssid_results.results | community.general.json_query('[*].meraki_response') | first }}"
+        rows: "{{ networks_wireless_ssids }}"
+        temp: "{{ lookup('template', 'templates/list_of_dicts.j2') }}"
+      ansible.builtin.debug:
+        msg: "{{ temp }}"
+
+    - name: Wireless SSIDs' RADIUS Configuration
+      delegate_to: localhost
+      vars:
+        # hide: ["address", "firmware", "lat", "lng", "notes", "url"]
+        head:
+          # - enabled
+          # - number
+          - name
+          # - radiusAuthenticationNasId
+          # - radiusCalledStationId
+          - radiusServers
+          # - radiusAccountingServers
+          - radiusServerTimeout
+          - radiusServerAttemptsLimit
+          - radiusTestingEnabled
+          # - radiusAccountingEnabled
+          - radiusAccountingInterimInterval
+          - radiusAttributeForGroupPolicies
+          - radiusCoaEnabled
+          # - radiusFallbackEnabled
+          # - radiusProxyEnabled
+        maxw: 30
+        # rows: "{{ results.meraki_response }}"
+        rows: "{{ ssid_results.results | community.general.json_query('[*].meraki_response') | first }}"
+        temp: "{{ lookup('template', 'templates/list_of_dicts.j2') }}"
+      ansible.builtin.debug:
+        msg: "{{ temp }}"
+
+
+    - name: Create directory | {{ dir_configs | default("configs") }}
+      delegate_to: localhost
+      ansible.builtin.file:
+        path: "{{ dir_configs | default('configs') }}"
+        state: directory
+        mode: "0700"
+
+
+    - name: To YAML File | {{ dir_configs | default("configs") }}/networks_wireless_ssids.yaml
+      delegate_to: localhost
+      when:
+        - networks_wireless_ssids is defined
+        - networks_wireless_ssids | count > 0
+      vars:
+        resource_name: networks_wireless_ssids
+        resources: "{{ networks_wireless_ssids }}"
+      ansible.builtin.template:
+        src: templates/resource_template.j2
+        dest: "{{ dir_configs | default('configs') }}/networks_wireless_ssids.yaml"
+        mode: "0644"
