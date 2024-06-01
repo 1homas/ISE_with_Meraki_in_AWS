@@ -6,44 +6,35 @@
 # 💡 Not used! Must update to account for multiple nodes using ise_nodes
 # ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁ ⟁
 
-  - name: Create ise_facts
-    ansible.builtin.set_fact:
-      ise_facts:
-        ise_hostname: "{{ item.private_ip }}"
+- name: Create ise_facts
+  ansible.builtin.set_fact:
+    ise_facts:
+      ise_hostname: "{{ item.private_ip }}"
 
-  # - name: Verify ise_facts
-  #   ansible.builtin.debug: var=ise_facts
+# - name: Verify ise_facts
+#   ansible.builtin.debug: var=ise_facts
 
+- name: Get ISE Version
+  delegate_to: localhost
+  ansible.builtin.uri:
+    url: "https://{{ item.private_ip }}/ers/config/op/systemconfig/iseversion"
+    url_username: "{{ ise_username }}"
+    url_password: "{{ ise_password }}"
+    headers:
+      Accept: application/json
+    validate_certs: "{{ ise_verify }}"
+  register: result
+  until: result.status == 200
+  retries: 10
+  delay: 10
 
+# - name: Show Full Version result
+#   ansible.builtin.debug: var=result
 
+- name: Set Facts for ISE Version & Patch
+  loop: "{{ result.json.OperationResult.resultValue }}"
+  ansible.builtin.set_fact:
+    ise_facts: "{{ ise_facts | default({}) | combine( { item.name : item.value } ) }}"
 
-  - name: Get ISE Version
-    delegate_to: localhost
-    ansible.builtin.uri:
-      url: "https://{{ item.private_ip }}/ers/config/op/systemconfig/iseversion"
-      url_username: "{{ ise_username }}"
-      url_password: "{{ ise_password }}"
-      headers:
-        Accept: application/json
-      validate_certs: "{{ ise_verify }}"
-    register: result
-    until: result.status == 200
-    retries: 10
-    delay: 10
-
-  # - name: Show Full Version result
-  #   ansible.builtin.debug: var=result
-
-
-
-
-  - name: Set Facts for ISE Version & Patch
-    loop: "{{ result.json.OperationResult.resultValue }}"
-    ansible.builtin.set_fact:
-      ise_facts: "{{ ise_facts | default({}) | combine( { item.name : item.value } ) }}"
-
-  - name: Show ise_facts
-    ansible.builtin.debug: var=ise_facts
-
-
-...
+- name: Show ise_facts
+  ansible.builtin.debug: var=ise_facts

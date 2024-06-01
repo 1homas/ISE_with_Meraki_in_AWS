@@ -1,17 +1,13 @@
 ---
-
-  - name: Create Endpoint Group | {{ item.name }}
-    delegate_to: localhost
-    cisco.ise.endpoint_group:
-      ise_hostname: "{{ ansible_host }}"
-      ise_username: "{{ ise_username }}"
-      ise_password: "{{ ise_password }}"
-      ise_verify:   "{{ ise_verify }}"
-      state: "{{ item.state | default('present') }}"
-      name:  "{{ item.name }}"
-      description:   "{{ item.description }}"
-      systemDefined: "{{ item.systemDefined | default('false') }}"
-    tags: [ endpointgroup, endpointgroups, endpoint_group, endpoint_groups ]
-
-
-...
+- name: Create Endpoint Group | {{ item.name }}
+  delegate_to: localhost
+  cisco.ise.endpoint_group:
+    ise_hostname: "{{ ansible_host }}"
+    ise_username: "{{ ise_username }}"
+    ise_password: "{{ ise_password }}"
+    ise_verify: "{{ ise_verify }}"
+    state: "{{ item.state | default('present') }}"
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    systemDefined: "{{ item.systemDefined | default('false') }}"
+  tags: [endpointgroup, endpointgroups, endpoint_group, endpoint_groups]

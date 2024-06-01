@@ -1,21 +1,17 @@
 ---
+# - name: Show item
+#   ansible.builtin.debug: var=item
 
-  # - name: Show item
-  #   ansible.builtin.debug: var=item
-
-  - name: Create NDG | {{ item.name }}
-    delegate_to: localhost
-    cisco.ise.network_device_group:
-      ise_hostname: "{{ ansible_host }}"
-      ise_username: "{{ ise_username }}"
-      ise_password: "{{ ise_password }}"
-      ise_verify:   "{{ ise_verify }}"
-      ise_debug:    "{{ ise_debug }}"
-      state: "{{ item.state | default('present') }}"
-      name:  "{{ item.name }}"
-      description: "{{ item.description }}"
-      othername:   "{{ item.othername }}"
-    tags: [ network_device_group, network_device ]
-
-
-...
+- name: Create NDG | {{ item.name }}
+  delegate_to: localhost
+  cisco.ise.network_device_group:
+    ise_hostname: "{{ ansible_host }}"
+    ise_username: "{{ ise_username }}"
+    ise_password: "{{ ise_password }}"
+    ise_verify: "{{ ise_verify }}"
+    ise_debug: "{{ ise_debug }}"
+    state: "{{ item.state | default('present') }}"
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    othername: "{{ item.othername }}"
+  tags: [network_device_group, network_device]

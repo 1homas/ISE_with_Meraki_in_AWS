@@ -1,32 +1,29 @@
 ---
+#
+# Where repositories is a list of repositories. Example:
+#
+# - name: FTP
+#   serverName: 10.10.20.90
+#   protocol: FTP
+#   path: /
+#   userName: ise
+#   password: C1sco12345
+#   enablePki: false
 
-  #
-  # Where repositories is a list of repositories. Example:
-  #
-  # - name: FTP
-  #   serverName: 10.10.20.90
-  #   protocol: FTP
-  #   path: /
-  #   userName: ise
-  #   password: C1sco12345
-  #   enablePki: false
-
-  - name: Create Repository | {{ item.protocol }}:{{ item.name }}{{ item.path }}
-    delegate_to: localhost
-    cisco.ise.repository:
-      ise_hostname: "{{ ansible_host }}"
-      ise_username: "{{ ise_username }}"
-      ise_password: "{{ ise_password }}"
-      ise_verify:   "{{ ise_verify   }}"
-      ise_debug:    "{{ ise_debug    }}"
-      state: "{{ item.state | default('present') }}"
-      name:  "{{ item.name }}"
-      serverName: "{{ item.serverName }}"
-      protocol: "{{ item.protocol }}"    # CDROM|DISK|FTP|SFTP|HTTP|HTTPS|NFS|TFTP
-      path: "{{ item.path | default('/') }}"
-      userName: "{{ item.userName | default('') }}"
-      password: "{{ item.password | default('') }}"
-      enablePki: "{{ item.enablePki | default(false) }}"
-    tags: repository
-
-...
+- name: Create Repository | {{ item.protocol }}:{{ item.name }}{{ item.path }}
+  delegate_to: localhost
+  cisco.ise.repository:
+    ise_hostname: "{{ ansible_host }}"
+    ise_username: "{{ ise_username }}"
+    ise_password: "{{ ise_password }}"
+    ise_verify: "{{ ise_verify   }}"
+    ise_debug: "{{ ise_debug    }}"
+    state: "{{ item.state | default('present') }}"
+    name: "{{ item.name }}"
+    serverName: "{{ item.serverName }}"
+    protocol: "{{ item.protocol }}" # CDROM|DISK|FTP|SFTP|HTTP|HTTPS|NFS|TFTP
+    path: "{{ item.path | default('/') }}"
+    userName: "{{ item.userName | default('') }}"
+    password: "{{ item.password | default('') }}"
+    enablePki: "{{ item.enablePki | default(false) }}"
+  tags: repository
